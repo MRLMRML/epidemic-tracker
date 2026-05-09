@@ -2,132 +2,166 @@
 <html lang="zh">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Global Epidemic Tracker</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"/>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-:root{--bg:#101820;--panel:#1a2332;--card:#1f2b3d;--border:#2d3b50;--text:#94a3b8;--bright:#e2e8f0;--muted:#64748b;--red:#ef4444;--amber:#f59e0b;--green:#10b981;--blue:#3b82f6;--purple:#8b5cf6;--cyan:#06b6d4}
-body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;font-size:15px;line-height:1.5}
+:root{--bg:#101820;--panel:#1a2332;--card:#1e293b;--border:#2d3b50;--text:#94a3b8;--bright:#f1f5f9;--muted:#64748b;--red:#ef4444;--amber:#f59e0b;--green:#22c55e;--blue:#3b82f6;--purple:#8b5cf6;--cyan:#06b6d4}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;font-size:14px;min-height:100vh;display:flex;flex-direction:column}
 a{color:var(--cyan);text-decoration:none}
 
-.hdr{background:var(--panel);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
-.hdr h1{font-size:16px;font-weight:700;color:var(--bright)}
-.hdr-r{display:flex;align-items:center;gap:10px}
-select{background:var(--card);color:var(--text);border:1px solid var(--border);padding:5px 10px;border-radius:6px;font-size:13px}
-.motto-bar{background:var(--red);color:white;text-align:center;padding:6px;font-size:13px;font-weight:700;letter-spacing:0.05em}
+/* Header */
+.hdr{background:var(--panel);border-bottom:1px solid var(--border);padding:8px 16px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-shrink:0}
+.hdr h1{font-size:15px;font-weight:700;color:var(--bright);white-space:nowrap}
+.hdr-r{display:flex;align-items:center;gap:8px}
+select,.sel{background:var(--card);color:var(--text);border:1px solid var(--border);padding:5px 8px;border-radius:6px;font-size:12px}
 
-.search-bar{background:var(--panel);border-bottom:1px solid var(--border);padding:8px 16px;display:flex;align-items:center;gap:10px}
-.search-bar input{flex:1;background:var(--card);border:1px solid var(--border);color:var(--bright);padding:8px 14px;border-radius:8px;font-size:14px;font-family:inherit}
-.search-bar input:focus{outline:none;border-color:var(--cyan)}
-.search-bar input::placeholder{color:var(--muted)}
+/* Motto */
+.motto{background:var(--red);color:white;text-align:center;padding:5px 12px;font-size:12px;font-weight:700;letter-spacing:0.04em;flex-shrink:0}
 
-.ticker{background:var(--panel);border-bottom:1px solid var(--border);overflow:hidden;height:32px;display:flex;align-items:center}
-.ticker-label{background:var(--red);color:white;padding:0 12px;font-size:12px;font-weight:700;height:100%;display:flex;align-items:center;flex-shrink:0}
-.ticker-scroll{display:flex;white-space:nowrap;animation:scroll 120s linear infinite;padding-left:12px}
-@keyframes scroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
-.ticker-item{display:inline-flex;align-items:center;gap:4px;margin-right:28px;font-size:13px}
-.ticker-dot{color:var(--red)}
+/* News vertical scroll */
+.news-wrap{background:var(--panel);border-bottom:1px solid var(--border);height:28px;overflow:hidden;position:relative;flex-shrink:0;display:flex;align-items:center}
+.news-label{background:var(--red);color:white;padding:0 10px;font-size:11px;font-weight:700;height:100%;display:flex;align-items:center;flex-shrink:0;z-index:1}
+.news-scroll{flex:1;height:100%;overflow:hidden;position:relative}
+.news-list{animation:vscroll 30s linear infinite;position:absolute;width:100%}
+@keyframes vscroll{0%{top:0}100%{top:-50%}}
+.news-item{height:28px;display:flex;align-items:center;padding:0 12px;font-size:12px;white-space:nowrap;overflow:hidden}
+.news-item .nd{color:var(--red);margin-right:6px;font-size:8px}
 
-.stats{display:grid;grid-template-columns:repeat(5,1fr);border-bottom:1px solid var(--border)}
-.stat{background:var(--panel);padding:12px;text-align:center;border-right:1px solid var(--border)}
+/* Search + Country filter */
+.filter-bar{background:var(--panel);border-bottom:1px solid var(--border);padding:6px 16px;display:flex;gap:8px;align-items:center;flex-shrink:0}
+.filter-bar input{flex:1;background:var(--card);border:1px solid var(--border);color:var(--bright);padding:7px 12px;border-radius:6px;font-size:13px}
+.filter-bar input:focus{outline:none;border-color:var(--cyan)}
+.filter-bar input::placeholder{color:var(--muted)}
+
+/* Stats */
+.stats{display:grid;grid-template-columns:repeat(5,1fr);border-bottom:1px solid var(--border);flex-shrink:0}
+.stat{background:var(--panel);padding:10px 8px;text-align:center;border-right:1px solid var(--border)}
 .stat:last-child{border-right:none}
-.stat-v{font-size:22px;font-weight:700}
-.stat-l{font-size:11px;color:var(--muted);text-transform:uppercase;margin-top:2px}
+.stat-v{font-size:20px;font-weight:700}
+.stat-l{font-size:10px;color:var(--muted);text-transform:uppercase;margin-top:2px}
 .stat:nth-child(1) .stat-v{color:var(--red)}
 .stat:nth-child(2) .stat-v{color:var(--amber)}
 .stat:nth-child(3) .stat-v{color:var(--blue)}
 .stat:nth-child(4) .stat-v{color:var(--purple)}
 .stat:nth-child(5) .stat-v{color:var(--green)}
 
-.layout{display:grid;grid-template-columns:1fr 380px;height:calc(100vh - 220px);min-height:400px}
-#map{width:100%;height:100%}
-.leaflet-container{background:#1a2332!important}
+/* Main layout */
+.main{display:grid;grid-template-columns:1fr 360px;flex:1;min-height:0}
+.map-col{position:relative;min-height:400px}
+#map{position:absolute;top:0;left:0;right:0;bottom:0}
+.leaflet-container{background:var(--panel)!important}
 
+/* Side panel */
 .side{background:var(--panel);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
-.side-body{flex:1;overflow-y:auto;padding:8px}
-.side-body::-webkit-scrollbar{width:5px}
-.side-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.side-body{flex:1;overflow-y:auto;padding:6px}
+.side-body::-webkit-scrollbar{width:4px}
+.side-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
 
-.card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:6px;cursor:pointer;border-left:3px solid transparent;transition:transform 0.1s}
-.card:hover{transform:translateX(3px);border-color:var(--cyan)}
-.card.crit{border-left-color:var(--red)}.card.high{border-left-color:var(--amber)}.card.mod{border-left-color:var(--blue)}.card.low{border-left-color:var(--green)}
-.card-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
-.card-disease{font-size:14px;font-weight:600;color:var(--bright);cursor:help;position:relative}
-.card-disease .tooltip{display:none;position:absolute;top:100%;left:0;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:12px;font-weight:400;color:var(--text);width:280px;z-index:100;line-height:1.4;box-shadow:0 4px 12px rgba(0,0,0,0.3)}
-.card-disease:hover .tooltip{display:block}
-.sev{font-size:11px;padding:2px 7px;border-radius:4px;font-weight:600}
-.sev-c{background:rgba(239,68,68,0.15);color:var(--red)}.sev-h{background:rgba(245,158,11,0.15);color:var(--amber)}.sev-m{background:rgba(59,130,246,0.15);color:var(--blue)}.sev-l{background:rgba(16,185,129,0.15);color:var(--green)}
-.card-loc{font-size:13px;color:var(--muted);margin-bottom:4px}
-.card-nums{display:flex;gap:12px;font-size:13px}.card-nums b{color:var(--bright)}
-.card-bar{height:3px;background:var(--border);border-radius:2px;margin:6px 0 4px;overflow:hidden}
-.card-bar-fill{height:100%;border-radius:2px}
-.tags{display:flex;gap:4px;flex-wrap:wrap}
-.tag{font-size:10px;padding:2px 5px;border-radius:3px}
-.tag-v{background:rgba(16,185,129,0.12);color:var(--green)}.tag-u{background:rgba(255,255,255,0.04);color:var(--muted)}.tag-h{background:rgba(239,68,68,0.12);color:var(--red)}
+/* Outbreak card */
+.ocard{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:5px;cursor:pointer;border-left:3px solid transparent;transition:all 0.15s}
+.ocard:hover{border-color:var(--cyan);transform:translateX(2px)}
+.ocard.crit{border-left-color:var(--red)}.ocard.high{border-left-color:var(--amber)}.ocard.mod{border-left-color:var(--blue)}.ocard.low{border-left-color:var(--green)}
+.ocard-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:3px}
+.ocard-disease{font-size:13px;font-weight:600;color:var(--bright);cursor:help;position:relative}
+.ocard-disease:hover .tip{display:block}
+.tip{display:none;position:absolute;top:calc(100% + 4px);left:0;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:8px;font-size:11px;font-weight:400;color:var(--text);width:260px;z-index:999;line-height:1.4;box-shadow:0 4px 12px rgba(0,0,0,0.4)}
+.sev{font-size:10px;padding:2px 6px;border-radius:4px;font-weight:600}
+.sev-c{background:rgba(239,68,68,0.15);color:var(--red)}.sev-h{background:rgba(245,158,11,0.15);color:var(--amber)}.sev-m{background:rgba(59,130,246,0.15);color:var(--blue)}.sev-l{background:rgba(34,197,94,0.15);color:var(--green)}
+.ocard-loc{font-size:12px;color:var(--muted);margin-bottom:3px}
+.ocard-nums{display:flex;gap:10px;font-size:12px;margin-bottom:4px}.ocard-nums b{color:var(--bright)}
+.ocard-bar{height:3px;background:var(--border);border-radius:2px;overflow:hidden;margin-bottom:4px}
+.ocard-bar-fill{height:100%;border-radius:2px}
+.tags{display:flex;gap:3px;flex-wrap:wrap;font-size:10px}
+.tag{padding:1px 5px;border-radius:3px}
+.tag-h{background:rgba(239,68,68,0.12);color:var(--red)}
+.tag-v{background:rgba(34,197,94,0.1);color:var(--green)}
+.tag-p{background:rgba(245,158,11,0.1);color:var(--amber)}
 
-.ftr{background:var(--panel);border-top:1px solid var(--border);padding:8px 16px;font-size:12px;color:var(--muted);text-align:center}
+/* Disease detail modal */
+.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:20px;width:90%;max-width:600px;max-height:80vh;overflow-y:auto}
+.modal h2{color:var(--bright);font-size:16px;margin-bottom:10px}
+.modal-close{float:right;background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer}
+.chart-container{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:12px}
+.mini-chart{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center}
+.mini-chart-title{font-size:10px;color:var(--muted);text-transform:uppercase;margin-bottom:4px}
+.mini-chart-val{font-size:18px;font-weight:700;color:var(--bright)}
+.mini-chart-sub{font-size:10px;color:var(--muted);margin-top:2px}
+.bar-chart{display:flex;align-items:flex-end;height:60px;gap:2px;justify-content:center;margin-top:8px}
+.bar-chart .bar{background:var(--blue);border-radius:2px 2px 0 0;min-width:6px;transition:height 0.3s}
 
-@media(max-width:900px){.layout{grid-template-columns:1fr;height:auto}.layout #map{height:50vh}.stats{grid-template-columns:repeat(3,1fr)}}
+.ftr{background:var(--panel);border-top:1px solid var(--border);padding:6px 16px;font-size:11px;color:var(--muted);text-align:center;flex-shrink:0}
+
+@media(max-width:900px){.main{grid-template-columns:1fr;grid-template-rows:50vh 1fr}.map-col{min-height:300px}.stats{grid-template-columns:repeat(3,1fr)}}
 </style>
 </head>
 <body>
-<div class="motto-bar">CDC is dead, we protect the people. — El pueblo unido jamás será vencido</div>
+<div class="motto">CDC is dead, we protect the people. — El pueblo unido jamás será vencido</div>
 <div class="hdr">
 <h1>🌍 GLOBAL EPIDEMIC TRACKER</h1>
 <div class="hdr-r">
-<select id="lang" onchange="setLang(this.value)"><option value="zh" selected>中文</option><option value="en">English</option><option value="es">Español</option><option value="ru">Русский</option><option value="ar">العربية</option><option value="fa">فارسی</option><option value="de">Deutsch</option><option value="fr">Français</option><option value="pt">Português</option></select>
+<select class="sel" id="lang-sel" onchange="setLang(this.value)"><option value="zh" selected>中文</option><option value="en">English</option><option value="es">Español</option><option value="ru">Русский</option><option value="ar">العربية</option><option value="fa">فارسی</option><option value="de">Deutsch</option><option value="fr">Français</option><option value="pt">Português</option></select>
 </div>
 </div>
-<div class="search-bar"><input type="text" id="search" placeholder="搜索疾病 / Search disease..." oninput="doSearch(this.value)"><select id="country-filter" onchange="doCountryFilter(this.value)" style="background:var(--card);border:1px solid var(--border);color:var(--bright);padding:8px;border-radius:8px;font-size:13px;min-width:120px"><option value="">All Countries</option></select></div>
-<div class="ticker"><div class="ticker-label" id="tk-lbl">最新</div><div class="ticker-scroll" id="tk"></div></div>
+<div class="news-wrap"><div class="news-label" id="n-lbl">最新</div><div class="news-scroll"><div class="news-list" id="news"></div></div></div>
+<div class="filter-bar">
+<input type="text" id="search" placeholder="搜索疾病..." oninput="applyFilters()">
+<select class="sel" id="country-sel" onchange="applyFilters()" style="min-width:130px"><option value="">所有国家</option></select>
+</div>
 <div class="stats" id="stats"></div>
-<div class="layout">
-<div id="map"></div>
+<div class="main">
+<div class="map-col"><div id="map"></div></div>
 <div class="side"><div class="side-body" id="side"></div></div>
 </div>
-<div class="ftr">DATA: WHO Disease Outbreak News API · VALIDATION: Bing News · Google News · Reddit</div>
+<div class="ftr">DATA: WHO Disease Outbreak News · WHO GHO · Our World in Data | NEWS VALIDATION: Bing · Google · Reddit</div>
+
+<div class="modal-overlay" id="modal" onclick="closeModal(event)">
+<div class="modal" id="modal-content"></div>
+</div>
+
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 <script>
-var map,cl,allData,lang='zh',searchTerm='';
-var SC={very_high:'#ef4444',high:'#f59e0b',moderate:'#3b82f6',low:'#10b981',unknown:'#64748b'};
+var map,cl,allData,lang='zh',filtered=[];
+var SC={very_high:'#ef4444',high:'#f59e0b',moderate:'#3b82f6',low:'#22c55e',unknown:'#64748b'};
 var SK={very_high:'crit',high:'high',moderate:'mod',low:'low',unknown:'low'};
 var SB={very_high:'sev-c',high:'sev-h',moderate:'sev-m',low:'sev-l',unknown:'sev-l'};
 
-var I18N={
-zh:{active:'活跃疫情',cases:'总病例',deaths:'总死亡',cfr:'致死率',countries:'受影响国家',tk:'最新',v:'✓ 已验证',u:'? 未验证',critical:'极高',high:'高',moderate:'中等',low:'低',unknown:'未知',search:'搜索疾病...'},
-en:{active:'ACTIVE',cases:'CASES',deaths:'DEATHS',cfr:'CFR',countries:'COUNTRIES',tk:'LATEST',v:'✓ Verified',u:'? Unverified',critical:'Critical',high:'High',moderate:'Moderate',low:'Low',unknown:'Unknown',search:'Search disease...'},
-es:{active:'ACTIVOS',cases:'CASOS',deaths:'MUERTES',cfr:'CFR',countries:'PAÍSES',tk:'ÚLTIMAS',v:'✓ Verificado',u:'? Sin verificar',critical:'Crítico',high:'Alto',moderate:'Moderado',low:'Bajo',unknown:'Desconocido',search:'Buscar enfermedad...'},
-ru:{active:'АКТИВНЫЕ',cases:'СЛУЧАИ',deaths:'СМЕРТИ',cfr:'ЛЕТАЛЬНОСТЬ',countries:'СТРАНЫ',tk:'ПОСЛЕДНИЕ',v:'✓ Подтв.',u:'? Не подтв.',critical:'Критический',high:'Высокий',moderate:'Умеренный',low:'Низкий',unknown:'Неизвестно',search:'Поиск болезни...'},
-ar:{active:'نشط',cases:'حالات',deaths:'وفيات',cfr:'معدل وفيات',countries:'دول',tk:'آخر',v:'✓ موثق',u:'? غير موثق',critical:'حرج',high:'عالي',moderate:'متوسط',low:'منخفض',unknown:'غير معروف',search:'بحث عن مرض...'},
-fa:{active:'فعال',cases:'موارد',deaths:'فوتی',cfr:'نرخ مرگ',countries:'کشورها',tk:'آخرین',v:'✓ تأیید',u:'? نامشخص',critical:'بحرانی',high:'بالا',moderate:'متوسط',low:'پایین',unknown:'ناشناخته',search:'جستجوی بیماری...'},
-de:{active:'AKTIV',cases:'FÄLLE',deaths:'TODE',cfr:'STERBERATE',countries:'LÄNDER',tk:'NEUESTE',v:'✓ Verifiziert',u:'? Offen',critical:'Kritisch',high:'Hoch',moderate:'Mäßig',low:'Niedrig',unknown:'Unbekannt',search:'Krankheit suchen...'},
-fr:{active:'ACTIFS',cases:'CAS',deaths:'DÉCÈS',cfr:'LÉTALITÉ',countries:'PAYS',tk:'DERNIÈRES',v:'✓ Vérifié',u:'? Non vérifié',critical:'Critique',high:'Élevé',moderate:'Modéré',low:'Faible',unknown:'Inconnu',search:'Rechercher maladie...'},
-pt:{active:'ATIVOS',cases:'CASOS',deaths:'MORTES',cfr:'LETALIDADE',countries:'PAÍSES',tk:'ÚLTIMAS',v:'✓ Verificado',u:'? Não verificado',critical:'Crítico',high:'Alto',moderate:'Moderado',low:'Baixo',unknown:'Desconhecido',search:'Buscar doença...'}
+var UI={
+zh:{active:'活跃疫情',cases:'病例',deaths:'死亡',cfr:'致死率',countries:'国家',search:'搜索疾病...',allc:'所有国家',latest:'最新',verified:'已验证',pending:'待确认',critical:'极高',high:'高',moderate:'中等',low:'低',d7:'近7天',d30:'近30天',d180:'近半年',total:'累计',close:'关闭'},
+en:{active:'ACTIVE',cases:'CASES',deaths:'DEATHS',cfr:'CFR',countries:'COUNTRIES',search:'Search disease...',allc:'All Countries',latest:'LATEST',verified:'Verified',pending:'Pending',critical:'Critical',high:'High',moderate:'Moderate',low:'Low',d7:'7 Days',d30:'30 Days',d180:'6 Months',total:'Total',close:'Close'},
+es:{active:'ACTIVOS',cases:'CASOS',deaths:'MUERTES',cfr:'CFR',countries:'PAÍSES',search:'Buscar...',allc:'Todos los países',latest:'ÚLTIMAS',verified:'Verificado',pending:'Pendiente',critical:'Crítico',high:'Alto',moderate:'Moderado',low:'Bajo',d7:'7 días',d30:'30 días',d180:'6 meses',total:'Total',close:'Cerrar'},
+ru:{active:'АКТИВНЫЕ',cases:'СЛУЧАИ',deaths:'СМЕРТИ',cfr:'ЛЕТАЛЬНОСТЬ',countries:'СТРАНЫ',search:'Поиск...',allc:'Все страны',latest:'ПОСЛЕДНИЕ',verified:'Подтверждено',pending:'Ожидание',critical:'Критический',high:'Высокий',moderate:'Умеренный',low:'Низкий',d7:'7 дней',d30:'30 дней',d180:'6 мес.',total:'Всего',close:'Закрыть'},
+ar:{active:'نشط',cases:'حالات',deaths:'وفيات',cfr:'معدل وفيات',countries:'دول',search:'بحث...',allc:'كل الدول',latest:'آخر',verified:'موثق',pending:'معلق',critical:'حرج',high:'عالي',moderate:'متوسط',low:'منخفض',d7:'7 أيام',d30:'30 يوم',d180:'6 أشهر',total:'إجمالي',close:'إغلاق'},
+fa:{active:'فعال',cases:'موارد',deaths:'فوتی',cfr:'نرخ مرگ',countries:'کشورها',search:'جستجو...',allc:'همه کشورها',latest:'آخرین',verified:'تأیید',pending:'در انتظار',critical:'بحرانی',high:'بالا',moderate:'متوسط',low:'پایین',d7:'۷ روز',d30:'۳۰ روز',d180:'۶ ماه',total:'کل',close:'بستن'},
+de:{active:'AKTIV',cases:'FÄLLE',deaths:'TODE',cfr:'STERBERATE',countries:'LÄNDER',search:'Suchen...',allc:'Alle Länder',latest:'NEUESTE',verified:'Verifiziert',pending:'Ausstehend',critical:'Kritisch',high:'Hoch',moderate:'Mäßig',low:'Niedrig',d7:'7 Tage',d30:'30 Tage',d180:'6 Monate',total:'Gesamt',close:'Schließen'},
+fr:{active:'ACTIFS',cases:'CAS',deaths:'DÉCÈS',cfr:'LÉTALITÉ',countries:'PAYS',search:'Rechercher...',allc:'Tous les pays',latest:'DERNIÈRES',verified:'Vérifié',pending:'En attente',critical:'Critique',high:'Élevé',moderate:'Modéré',low:'Faible',d7:'7 jours',d30:'30 jours',d180:'6 mois',total:'Total',close:'Fermer'},
+pt:{active:'ATIVOS',cases:'CASOS',deaths:'MORTES',cfr:'LETALIDADE',countries:'PAÍSES',search:'Buscar...',allc:'Todos países',latest:'ÚLTIMAS',verified:'Verificado',pending:'Pendente',critical:'Crítico',high:'Alto',moderate:'Moderado',low:'Baixo',d7:'7 dias',d30:'30 dias',d180:'6 meses',total:'Total',close:'Fechar'}
 };
 
-var DIS_INFO={
-'Cholera':{zh:'霍乱：由霍乱弧菌引起的急性腹泻传染病，通过污染水源传播，可在数小时内导致严重脱水。',en:'Cholera: Acute diarrheal disease caused by Vibrio cholerae. Transmitted via contaminated water. Can cause severe dehydration within hours.'},
-'Ebola Virus Disease':{zh:'埃博拉：高致死率病毒性出血热，通过接触体液传播，CFR可达50-90%。',en:'Ebola: Severe viral hemorrhagic fever spread through contact with bodily fluids. CFR can reach 50-90%.'},
-'Dengue':{zh:'登革热：蚊媒传染病，由埃及伊蚊传播，重症可致命。全球每年约3.9亿感染。',en:'Dengue: Mosquito-borne disease transmitted by Aedes aegypti. Severe forms can be fatal. ~390M infections/year globally.'},
-'Measles':{zh:'麻疹：高传染性呼吸道病毒病，可通过疫苗预防。未接种人群中传染力极强。',en:'Measles: Highly contagious respiratory viral disease. Vaccine-preventable. Extremely infectious among unvaccinated.'},
-'Hantavirus':{zh:'汉坦病毒：由啮齿动物传播的病毒，吸入受污染的排泄物气溶胶感染。安第斯病毒可人传人。',en:'Hantavirus: Rodent-borne virus. Infection via inhaling aerosolized rodent excreta. Andes virus can transmit person-to-person.'},
-'Mpox':{zh:'猴痘：由猴痘病毒引起的病毒性疾病，通过密切接触传播，可引起皮疹和发热。',en:'Mpox: Viral disease causing rash and fever. Spread through close contact. Previously called monkeypox.'},
-'Yellow Fever':{zh:'黄热病：蚊媒传播的病毒性出血热，有疫苗可预防。非洲和南美洲流行。',en:'Yellow Fever: Mosquito-borne viral hemorrhagic fever. Vaccine-preventable. Endemic in Africa and South America.'},
-'Marburg Virus Disease':{zh:'马尔堡病毒病：与埃博拉相似的严重出血热，CFR高达88%。',en:'Marburg: Severe hemorrhagic fever related to Ebola. CFR up to 88%.'},
-'Nipah Virus Infection':{zh:'尼帕病毒：由果蝠传播的致命病毒，可人传人，CFR 40-75%。',en:'Nipah: Fatal virus from fruit bats. Can spread person-to-person. CFR 40-75%.'},
-'Lassa Fever':{zh:'拉沙热：由拉沙病毒引起的出血热，通过啮齿动物传播，西非流行。',en:'Lassa Fever: Hemorrhagic fever from rodents. Endemic in West Africa.'},
-'Influenza':{zh:'流感：由流感病毒引起的呼吸道传染病，每年全球300-500万重症病例。',en:'Influenza: Respiratory infection by influenza viruses. 3-5M severe cases globally per year.'},
-'Meningococcal Meningitis':{zh:'脑膜炎：细菌性脑膜炎，可在24小时内致死，非洲"脑膜炎带"高发。',en:'Meningitis: Bacterial meningitis. Can kill within 24 hours. High incidence in Africa "meningitis belt".'},
-'Diphtheria':{zh:'白喉：由白喉杆菌引起的细菌感染，可通过疫苗预防。',en:'Diphtheria: Bacterial infection by Corynebacterium diphtheriae. Vaccine-preventable.'},
-'Poliomyelitis':{zh:'脊髓灰质炎：可导致永久性瘫痪的病毒病，通过粪口途径传播。',en:'Polio: Viral disease causing irreversible paralysis. Fecal-oral transmission.'},
-'Plague':{zh:'鼠疫：由鼠疫耶尔森菌引起，通过跳蚤传播，不治疗则致命。',en:'Plague: Caused by Yersinia pestis. Flea-borne. Fatal without treatment.'},
-'Anthrax':{zh:'炭疽：由炭疽芽胞杆菌引起的人畜共患病，可通过皮肤、吸入或摄入感染。',en:'Anthrax: Zoonotic disease from Bacillus anthracis. Infection via skin, inhalation, or ingestion.'},
-'Rift Valley Fever':{zh:'裂谷热：由蚊虫和接触受感染动物传播的病毒性人畜共患病。',en:'Rift Valley Fever: Viral zoonotic disease from mosquitoes and contact with infected animals.'},
-'Chikungunya':{zh:'基孔肯雅热：蚊媒传播的病毒病，主要症状为严重关节痛和发热。',en:'Chikungunya: Mosquito-borne viral disease causing severe joint pain and fever.'}
+var DIS_TIP={
+'Cholera':{zh:'由霍乱弧菌引起的急性腹泻病，经污染水源传播。',en:'Acute diarrheal disease from Vibrio cholerae via contaminated water.'},
+'Ebola Virus Disease':{zh:'高致死率出血热，通过体液传播，CFR可达50-90%。',en:'Severe hemorrhagic fever via bodily fluids. CFR 50-90%.'},
+'Dengue':{zh:'蚊媒传播病毒病，重症可致命。年感染约3.9亿。',en:'Mosquito-borne viral disease. ~390M infections/year globally.'},
+'Measles':{zh:'高传染性呼吸道病毒，可通过疫苗预防。',en:'Highly contagious respiratory virus. Vaccine-preventable.'},
+'Hantavirus':{zh:'啮齿动物传播，吸入受污染气溶胶感染。安第斯病毒可人传人。',en:'Rodent-borne. Andes virus can transmit person-to-person.'},
+'Mpox':{zh:'通过密切接触传播的病毒性疾病，引起皮疹和发热。',en:'Viral disease causing rash/fever. Spread via close contact.'},
+'Yellow Fever':{zh:'蚊媒出血热，有疫苗可预防，非洲和南美流行。',en:'Mosquito-borne hemorrhagic fever. Vaccine-preventable.'},
+'Marburg Virus Disease':{zh:'与埃博拉相似的严重出血热，CFR高达88%。',en:'Hemorrhagic fever related to Ebola. CFR up to 88%.'},
+'Nipah Virus Infection':{zh:'果蝠传播致命病毒，可人传人，CFR 40-75%。',en:'Fatal virus from fruit bats. Person-to-person. CFR 40-75%.'},
+'Lassa Fever':{zh:'啮齿动物传播出血热，西非流行。',en:'Rodent-borne hemorrhagic fever. Endemic in West Africa.'},
+'Influenza':{zh:'流感病毒呼吸道传染病，年重症300-500万例。',en:'Respiratory infection. 3-5M severe cases/year.'},
+'Diphtheria':{zh:'白喉杆菌引起细菌感染，可通过疫苗预防。',en:'Bacterial infection. Vaccine-preventable.'},
+'Poliomyelitis':{zh:'可导致永久性瘫痪的病毒病，粪口传播。',en:'Viral disease causing paralysis. Fecal-oral transmission.'},
+'Chikungunya':{zh:'蚊媒病毒病，主要症状为严重关节痛。',en:'Mosquito-borne. Severe joint pain and fever.'},
+'Rift Valley Fever':{zh:'蚊虫和感染动物传播的病毒性人畜共患病。',en:'Viral zoonotic from mosquitoes and infected animals.'},
+'Anthrax':{zh:'炭疽杆菌引起的人畜共患病。',en:'Zoonotic disease from Bacillus anthracis.'},
+'Plague':{zh:'鼠疫耶尔森菌引起，跳蚤传播，不治则致命。',en:'Yersinia pestis. Flea-borne. Fatal without treatment.'}
 };
 
 var DIS_NAME={
@@ -142,89 +176,202 @@ var DIS_NAME={
 'Nipah Virus Infection':{zh:'尼帕病毒',es:'Nipah',ru:'Нипах',ar:'نيباه',fa:'نیپاه',de:'Nipah',fr:'Nipah',pt:'Nipah'},
 'Lassa Fever':{zh:'拉沙热',es:'Fiebre de Lassa',ru:'Лихорадка Ласса',ar:'حمى لاسا',fa:'تب لاسا',de:'Lassa-Fieber',fr:'Fièvre de Lassa',pt:'Febre de Lassa'},
 'Influenza':{zh:'流感',es:'Gripe',ru:'Грипп',ar:'الإنفلوانزا',fa:'آنفلوانزا',de:'Grippe',fr:'Grippe',pt:'Gripe'},
-'Meningococcal Meningitis':{zh:'脑膜炎',es:'Meningitis',ru:'Менингит',ar:'التهاب السحايا',fa:'مننژیت',de:'Meningitis',fr:'Méningite',pt:'Meningite'},
 'Diphtheria':{zh:'白喉',es:'Difteria',ru:'Дифтерия',ar:'الدفتيريا',fa:'دیفتری',de:'Diphtherie',fr:'Diphtérie',pt:'Difteria'},
 'Poliomyelitis':{zh:'脊髓灰质炎',es:'Polio',ru:'Полиомиелит',ar:'شلل الأطفال',fa:'فلج اطفال',de:'Polio',fr:'Polio',pt:'Pólio'},
-'Plague':{zh:'鼠疫',es:'Peste',ru:'Чума',ar:'الطاعون',fa:'طاعون',de:'Pest',fr:'Peste',pt:'Peste'},
-'Anthrax':{zh:'炭疽',es:'Ántrax',ru:'Сибирская язва',ar:'الجمرة الخبيثة',fa:'سیاه‌زخم',de:'Anthrax',fr:'Charbon',pt:'Antraz'},
-'Rift Valley Fever':{zh:'裂谷热',es:'Fiebre del Valle del Rift',ru:'Лихорадка Рифт-Валли',ar:'حمى الوادي المتصدع',fa:'تب دره ریفت',de:'Rifttal-Fieber',fr:'Fièvre du Rift',pt:'Febre do Rift'},
 'Chikungunya':{zh:'基孔肯雅热',es:'Chikungunya',ru:'Чикунгунья',ar:'شيكونغونيا',fa:'چیکونگونیا',de:'Chikungunya',fr:'Chikungunya',pt:'Chikungunya'},
-'Hepatitis E':{zh:'戊型肝炎',es:'Hepatitis E',ru:'Гепатит E',ar:'التهاب الكبد E',fa:'هپاتیت E',de:'Hepatitis E',fr:'Hépatite E',pt:'Hepatite E'},
-'Acute Unknown Illness':{zh:'急性未知疾病',es:'Enfermedad desconocida',ru:'Неизвестное заболевание',ar:'مرض مجهول',fa:'بیماری ناشناخته',de:'Unbekannte Krankheit',fr:'Maladie inconnue',pt:'Doença desconhecida'},
-'Sudan Virus Disease':{zh:'苏丹病毒',es:'Virus Sudán',ru:'Вирус Судана',ar:'فيروس السودان',fa:'ویروس سودان',de:'Sudan-Virus',fr:'Virus Soudan',pt:'Vírus Sudan'},
-'COVID-19':{zh:'新冠',es:'COVID-19',ru:'COVID-19',ar:'كوفيد-19',fa:'کووید-19',de:'COVID-19',fr:'COVID-19',pt:'COVID-19'},
-'Crimean-Congo Hemorrhagic Fever':{zh:'克里米亚-刚果出血热',es:'FC. Crimea-Congo',ru:'Крымская лихорадка',ar:'حمى القرم',fa:'تب کریمه-کنگو',de:'Krim-Kongo-Fieber',fr:'Fièvre Crimée-Congo',pt:'Febre Crimeia-Congo'},
-'West Nile Virus':{zh:'西尼罗病毒',es:'Virus del Nilo',ru:'Вирус Зап. Нила',ar:'فيروس غرب النيل',fa:'ویروس نیل غربی',de:'West-Nil-Virus',fr:'Virus du Nil',pt:'Vírus do Nilo'}
+'Rift Valley Fever':{zh:'裂谷热',es:'Fiebre del Rift',ru:'Лихорадка Рифт-Валли',ar:'حمى الوادي المتصدع',fa:'تب دره ریفت',de:'Rifttal-Fieber',fr:'Fièvre du Rift',pt:'Febre do Rift'},
+'Anthrax':{zh:'炭疽',es:'Ántrax',ru:'Сибирская язва',ar:'الجمرة الخبيثة',fa:'سیاه‌زخم',de:'Anthrax',fr:'Charbon',pt:'Antraz'},
+'Plague':{zh:'鼠疫',es:'Peste',ru:'Чума',ar:'الطاعون',fa:'طاعون',de:'Pest',fr:'Peste',pt:'Peste'},
+'Acute Unknown Illness':{zh:'急性未知疾病',es:'Enfermedad desconocida',ru:'Неизвестная болезнь',ar:'مرض مجهول',fa:'بیماری ناشناخته',de:'Unbekannte Krankheit',fr:'Maladie inconnue',pt:'Doença desconhecida'},
+'Hepatitis E':{zh:'戊型肝炎',es:'Hepatitis E',ru:'Гепатит E',ar:'التهاب الكبد E',fa:'هپاتیت E',de:'Hepatitis E',fr:'Hépatite E',pt:'Hepatite E'}
 };
 
+function t(k){return(UI[lang]&&UI[lang][k])||UI.en[k]||k}
 function dn(n){return(lang==='en'||!DIS_NAME[n])?n:(DIS_NAME[n][lang]||n)}
-function i(k){return(I18N[lang]&&I18N[lang][k])||I18N.en[k]||k}
-function sl(s){return i(s)||s}
 function fmt(n){if(n>=1e6)return(n/1e6).toFixed(1)+'M';if(n>=1e3)return(n/1e3).toFixed(1)+'K';return String(n)}
-function pct(a,b){return b>0?((a/b)*100).toFixed(1)+'%':'0%'}
-function getTooltip(name){var info=DIS_INFO[name];if(!info)return'';return info[lang]||info.en||''}
+function pct(a,b){return b>0?((a/b)*100).toFixed(1)+'%':'—'}
+function getTip(n){var d=DIS_TIP[n];if(!d)return'';return d[lang]||d.en||''}
 
-function setLang(l){lang=l;document.getElementById('search').placeholder=i('search');document.getElementById('tk-lbl').textContent=i('tk');if(allData)render(allData)}
-function doSearch(v){searchTerm=v.toLowerCase();if(allData)render(allData)}
-
-var countryFilter='';
-function doCountryFilter(v){countryFilter=v;if(allData)render(allData)}
-function init(){
-map=L.map('map',{zoomControl:true,attributionControl:false}).setView([20,0],2);
-L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png',{maxZoom:18}).addTo(map);
-cl=L.markerClusterGroup({maxClusterRadius:50,showCoverageOnHover:false,iconCreateFunction:function(c){var n=c.getChildCount(),r=n<5?20:n<20?28:n<50?36:44;return L.divIcon({html:'<div style="width:'+r+'px;height:'+r+'px;border-radius:50%;background:rgba(239,68,68,0.2);border:2px solid rgba(239,68,68,0.5);display:flex;align-items:center;justify-content:center;color:#ef4444;font-weight:700;font-size:'+(r<28?11:13)+'px">'+n+'</div>',className:'',iconSize:[r,r]})}});
-map.addLayer(cl);
-load();setInterval(load,600000);
+function setLang(l){
+    lang=l;
+    document.getElementById('search').placeholder=t('search');
+    document.getElementById('n-lbl').textContent=t('latest');
+    // Repopulate country selector in current language
+    populateCountries();
+    if(allData)render(allData);
 }
 
-function load(){fetch('data/epidemics.json').then(function(r){return r.json()}).then(function(d){allData=d;render(d)}).catch(function(e){console.error(e)})}
+function applyFilters(){if(allData)render(allData)}
+
+function populateCountries(){
+    if(!allData)return;
+    var sel=document.getElementById('country-sel');
+    var current=sel.value;
+    sel.innerHTML='<option value="">'+t('allc')+'</option>';
+    var seen={};
+    allData.outbreaks.forEach(function(o){
+        if(o.country_iso3 && !seen[o.country_iso3]){
+            seen[o.country_iso3]=o.location||o.country||o.country_iso3;
+        }
+    });
+    Object.keys(seen).sort(function(a,b){return seen[a].localeCompare(seen[b])}).forEach(function(iso){
+        var opt=document.createElement('option');
+        opt.value=iso;
+        opt.textContent=seen[iso];
+        sel.appendChild(opt);
+    });
+    sel.value=current;
+}
+
+function init(){
+    map=L.map('map',{zoomControl:true,attributionControl:false}).setView([20,0],2);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png',{maxZoom:18}).addTo(map);
+    cl=L.markerClusterGroup({maxClusterRadius:50,showCoverageOnHover:false,
+        iconCreateFunction:function(c){var n=c.getChildCount(),r=n<5?20:n<20?28:n<50?36:44;
+        return L.divIcon({html:'<div style="width:'+r+'px;height:'+r+'px;border-radius:50%;background:rgba(239,68,68,0.2);border:2px solid rgba(239,68,68,0.5);display:flex;align-items:center;justify-content:center;color:#ef4444;font-weight:700;font-size:'+(r<28?10:12)+'px">'+n+'</div>',className:'',iconSize:[r,r]})}
+    });
+    map.addLayer(cl);
+    load();
+    setInterval(load,600000);
+    // Fix map size after layout renders
+    setTimeout(function(){map.invalidateSize()},200);
+    setTimeout(function(){map.invalidateSize()},1000);
+}
+
+function load(){
+    fetch('data/epidemics.json').then(function(r){return r.json()}).then(function(d){
+        allData=d;
+        populateCountries();
+        render(d);
+    }).catch(function(e){console.error('Load failed:',e)})
+}
 
 function render(d){
-var s=d.summary,o=d.outbreaks;
-if(searchTerm){o=o.filter(function(x){return(x.disease+' '+x.location+' '+x.country+(DIS_NAME[x.disease]?Object.values(DIS_NAME[x.disease]).join(' '):'')).toLowerCase().indexOf(searchTerm)>=0})}
-if(countryFilter){o=o.filter(function(x){return x.country_iso3===countryFilter||x.location===countryFilter||x.country===countryFilter})}
-document.getElementById('stats').innerHTML='<div class="stat"><div class="stat-v">'+s.total_active_outbreaks+'</div><div class="stat-l">'+i('active')+'</div></div><div class="stat"><div class="stat-v">'+fmt(s.total_cases)+'</div><div class="stat-l">'+i('cases')+'</div></div><div class="stat"><div class="stat-v">'+fmt(s.total_deaths)+'</div><div class="stat-l">'+i('deaths')+'</div></div><div class="stat"><div class="stat-v">'+(s.global_cfr*100).toFixed(1)+'%</div><div class="stat-l">'+i('cfr')+'</div></div><div class="stat"><div class="stat-v">'+s.countries_affected+'</div><div class="stat-l">'+i('countries')+'</div></div>';
-renderMap(o);renderTicker(o);renderSide(o);
-// Populate country dropdown
-var sel=document.getElementById('country-filter');
-if(sel.options.length<=1){var countries=new Set();d.outbreaks.forEach(function(x){if(x.country_iso3)countries.add(x.country_iso3+'|'+x.location)});Array.from(countries).sort(function(a,b){return a.split('|')[1].localeCompare(b.split('|')[1])}).forEach(function(c){var parts=c.split('|');var opt=document.createElement('option');opt.value=parts[0];opt.textContent=parts[1];sel.appendChild(opt)})}
+    var s=d.summary;
+    var o=d.outbreaks.slice();
+    var search=document.getElementById('search').value.toLowerCase();
+    var country=document.getElementById('country-sel').value;
+
+    // Apply filters
+    if(search){o=o.filter(function(x){return(x.disease+' '+x.location+' '+x.country+' '+(DIS_NAME[x.disease]?Object.values(DIS_NAME[x.disease]).join(' '):'')).toLowerCase().indexOf(search)>=0})}
+    if(country){o=o.filter(function(x){return x.country_iso3===country})}
+
+    // Sort by severity then cases
+    o.sort(function(a,b){var sv={very_high:0,high:1,moderate:2,low:3,unknown:4};return(sv[a.severity]||9)-(sv[b.severity]||9)||(b.cases||0)-(a.cases||0)});
+    filtered=o;
+
+    renderStats(s,o);
+    renderMap(o);
+    renderNews(d.outbreaks);
+    renderSide(o);
 }
 
-function renderMap(outbreaks){
-cl.clearLayers();
-outbreaks.forEach(function(o){
-if(!o.latitude&&!o.longitude)return;
-var c=SC[o.severity]||'#64748b',r=Math.max(5,Math.min(20,Math.sqrt(o.cases||1)*1.5));
-var m=L.circleMarker([o.latitude,o.longitude],{radius:r,color:c,fillColor:c,fillOpacity:0.4,weight:1.5});
-m.bindPopup('<strong>'+dn(o.disease)+'</strong>'+(o.h2h_transmission?' <span style="color:#ef4444">⚠H2H</span>':'')+'<br>📍 '+o.location+', '+o.country+'<br>'+i('cases')+': <strong>'+(o.cases||0).toLocaleString()+'</strong> · '+i('deaths')+': <strong>'+(o.deaths||0).toLocaleString()+'</strong><br>CFR: '+pct(o.deaths,o.cases)+(o.source_url?'<br><a href="'+o.source_url+'" target="_blank">WHO DON →</a>':''));
-cl.addLayer(m);
-});
+function renderStats(s,o){
+    var cases=0,deaths=0;
+    o.forEach(function(x){cases+=x.cases||0;deaths+=x.deaths||0});
+    document.getElementById('stats').innerHTML=
+        '<div class="stat"><div class="stat-v">'+o.length+'</div><div class="stat-l">'+t('active')+'</div></div>'+
+        '<div class="stat"><div class="stat-v">'+fmt(cases)+'</div><div class="stat-l">'+t('cases')+'</div></div>'+
+        '<div class="stat"><div class="stat-v">'+fmt(deaths)+'</div><div class="stat-l">'+t('deaths')+'</div></div>'+
+        '<div class="stat"><div class="stat-v">'+pct(deaths,cases)+'</div><div class="stat-l">'+t('cfr')+'</div></div>'+
+        '<div class="stat"><div class="stat-v">'+new Set(o.map(function(x){return x.country_iso3})).size+'</div><div class="stat-l">'+t('countries')+'</div></div>';
 }
 
-function renderTicker(outbreaks){
-var top=outbreaks.filter(function(o){return o.cases>0}).sort(function(a,b){return b.cases-a.cases}).slice(0,12);
-var h='';top.forEach(function(o){h+='<span class="ticker-item"><span class="ticker-dot">●</span>'+dn(o.disease)+(o.h2h_transmission?' [H2H]':'')+' — '+o.location+': '+fmt(o.cases)+' '+i('cases')+'</span>'});
-document.getElementById('tk').innerHTML=h+h;
+function renderMap(o){
+    cl.clearLayers();
+    o.forEach(function(x){
+        if(!x.latitude&&!x.longitude)return;
+        var c=SC[x.severity]||'#64748b';
+        var r=Math.max(5,Math.min(20,Math.sqrt(x.cases||1)*1.2));
+        var m=L.circleMarker([x.latitude,x.longitude],{radius:r,color:c,fillColor:c,fillOpacity:0.45,weight:1.5});
+        m.bindPopup('<b>'+dn(x.disease)+'</b>'+(x.h2h_transmission?' <span style="color:#ef4444">⚠H2H</span>':'')+'<br>📍 '+x.location+'<br>'+t('cases')+': <b>'+(x.cases>0?x.cases.toLocaleString():'—')+'</b> · '+t('deaths')+': <b>'+(x.deaths>0?x.deaths.toLocaleString():'—')+'</b>'+(x.source_url?'<br><a href="'+x.source_url+'" target="_blank">WHO →</a>':''));
+        cl.addLayer(m);
+    });
+    map.invalidateSize();
 }
 
-function renderSide(outbreaks){
-var sorted=outbreaks.slice().sort(function(a,b){var s={very_high:0,high:1,moderate:2,low:3,unknown:4};return(s[a.severity]||9)-(s[b.severity]||9)||(b.cases||0)-(a.cases||0)});
-var maxC=Math.max.apply(null,outbreaks.map(function(o){return o.cases||0}).concat([1]));
-var h='';
-sorted.forEach(function(o){
-var cls=SK[o.severity]||'low',sb=SB[o.severity]||'sev-l';
-var conf=o.confidence||'medium';var confTag=conf==='high'?'<span class="tag tag-v">✓ '+i('v')+'</span>':conf==='pending'?'<span class="tag" style="background:rgba(245,158,11,0.12);color:var(--amber)">⏳ pending</span>':'<span class="tag tag-u">'+i('u')+'</span>';var v=confTag;
-var h2h=o.h2h_transmission?'<span class="tag tag-h">H2H</span>':'';
-var barW=Math.max(2,Math.min(100,((o.cases||0)/maxC)*100));
-var tip=getTooltip(o.disease);
-var tipHtml=tip?'<span class="tooltip">'+tip+'</span>':'';
-h+='<div class="card '+cls+'" onclick="fly('+o.latitude+','+o.longitude+')"><div class="card-top"><span class="card-disease">'+dn(o.disease)+tipHtml+'</span><span class="sev '+sb+'">'+sl(o.severity)+'</span></div><div class="card-loc">📍 '+o.location+', '+o.country+'</div><div class="card-nums"><span>'+i('cases')+': <b>'+((o.cases||0)>0?(o.cases).toLocaleString():(o.confidence==='pending'?'—':'0'))+'</b></span><span>'+i('deaths')+': <b>'+(o.deaths||0).toLocaleString()+'</b></span><span>CFR: '+pct(o.deaths,o.cases)+'</span></div><div class="card-bar"><div class="card-bar-fill" style="width:'+barW+'%;background:'+(SC[o.severity]||'#64748b')+'"></div></div><div class="tags">'+v+' '+h2h+(o.source_url?' <a href="'+o.source_url+'" target="_blank" style="font-size:10px">WHO →</a>':'')+'</div></div>';
-});
-document.getElementById('side').innerHTML=h;
+function renderNews(outbreaks){
+    var top=outbreaks.filter(function(x){return x.cases>0}).sort(function(a,b){return b.cases-a.cases}).slice(0,20);
+    var h='';
+    top.forEach(function(x){h+='<div class="news-item"><span class="nd">●</span>'+dn(x.disease)+(x.h2h_transmission?' [H2H]':'')+' — '+x.location+': '+fmt(x.cases)+' '+t('cases')+'</div>'});
+    // Duplicate for seamless loop
+    document.getElementById('news').innerHTML=h+h;
 }
 
-function fly(lat,lng){if(lat&&lng)map.flyTo([lat,lng],6,{duration:1})}
-init();
+function renderSide(o){
+    var maxC=Math.max.apply(null,o.map(function(x){return x.cases||0}).concat([1]));
+    var h='';
+    o.forEach(function(x){
+        var cls=SK[x.severity]||'low';
+        var sb=SB[x.severity]||'sev-l';
+        var conf=x.confidence||'medium';
+        var confTag=conf==='high'?'<span class="tag tag-v">✓</span>':conf==='pending'?'<span class="tag tag-p">⏳</span>':'';
+        var h2h=x.h2h_transmission?'<span class="tag tag-h">H2H</span>':'';
+        var barW=Math.max(1,(x.cases||0)/maxC*100);
+        var tip=getTip(x.disease);
+        var tipHtml=tip?'<span class="tip">'+tip+'</span>':'';
+        h+='<div class="ocard '+cls+'" onclick="openDetail(\''+x.disease.replace(/'/g,"\\'")+'\')"><div class="ocard-top"><span class="ocard-disease">'+dn(x.disease)+tipHtml+'</span><span class="sev '+sb+'">'+t(x.severity==='very_high'?'critical':x.severity)+'</span></div><div class="ocard-loc">📍 '+x.location+'</div><div class="ocard-nums"><span>'+t('cases')+': <b>'+((x.cases>0)?x.cases.toLocaleString():'—')+'</b></span><span>'+t('deaths')+': <b>'+((x.deaths>0)?x.deaths.toLocaleString():'—')+'</b></span><span>CFR: '+pct(x.deaths,x.cases)+'</span></div><div class="ocard-bar"><div class="ocard-bar-fill" style="width:'+barW+'%;background:'+(SC[x.severity]||'#64748b')+'"></div></div><div class="tags">'+confTag+h2h+(x.source_url?' <a href="'+x.source_url+'" target="_blank" onclick="event.stopPropagation()" style="font-size:10px">WHO →</a>':'')+'</div></div>';
+    });
+    document.getElementById('side').innerHTML=h;
+}
+
+function openDetail(disease){
+    var outbreaks=allData.outbreaks.filter(function(x){return x.disease===disease});
+    var totalCases=0,totalDeaths=0;
+    outbreaks.forEach(function(x){totalCases+=x.cases||0;totalDeaths+=x.deaths||0});
+    var tip=getTip(disease);
+
+    // Simulate time-based data (since WHO DON is event-driven, use outbreak dates)
+    var now=new Date();
+    var d7=0,d30=0,d180=0;
+    outbreaks.forEach(function(x){
+        var days=(now-new Date(x.date_reported))/(86400000);
+        if(days<=7)d7+=x.cases||0;
+        if(days<=30)d30+=x.cases||0;
+        if(days<=180)d180+=x.cases||0;
+    });
+
+    // Generate bar chart data (monthly breakdown)
+    var months=[0,0,0,0,0,0];
+    outbreaks.forEach(function(x){
+        var d=new Date(x.date_reported);
+        var monthsAgo=Math.floor((now-d)/(86400000*30));
+        if(monthsAgo>=0&&monthsAgo<6)months[5-monthsAgo]+=x.cases||0;
+    });
+    var maxBar=Math.max.apply(null,months.concat([1]));
+
+    var h='<button class="modal-close" onclick="closeModal()">&times;</button>';
+    h+='<h2>'+dn(disease)+'</h2>';
+    if(tip)h+='<p style="font-size:12px;color:var(--text);margin-bottom:12px">'+tip+'</p>';
+    h+='<div style="font-size:12px;color:var(--muted);margin-bottom:8px">'+outbreaks.length+' outbreaks · '+new Set(outbreaks.map(function(x){return x.country_iso3})).size+' countries</div>';
+
+    h+='<div class="chart-container">';
+    h+='<div class="mini-chart"><div class="mini-chart-title">'+t('d7')+'</div><div class="mini-chart-val" style="color:var(--red)">'+fmt(d7)+'</div><div class="mini-chart-sub">'+t('cases')+'</div></div>';
+    h+='<div class="mini-chart"><div class="mini-chart-title">'+t('d30')+'</div><div class="mini-chart-val" style="color:var(--amber)">'+fmt(d30)+'</div><div class="mini-chart-sub">'+t('cases')+'</div></div>';
+    h+='<div class="mini-chart"><div class="mini-chart-title">'+t('d180')+'</div><div class="mini-chart-val" style="color:var(--blue)">'+fmt(d180)+'</div><div class="mini-chart-sub">'+t('cases')+'</div></div>';
+    h+='</div>';
+
+    h+='<div style="margin-top:12px;font-size:11px;color:var(--muted);text-align:center">Monthly trend (last 6 months)</div>';
+    h+='<div class="bar-chart">';
+    months.forEach(function(v){
+        var pct=Math.max(3,v/maxBar*100);
+        h+='<div class="bar" style="height:'+pct+'%;width:14px" title="'+v+' cases"></div>';
+    });
+    h+='</div>';
+
+    h+='<div style="margin-top:16px"><div style="font-size:12px;font-weight:600;color:var(--bright);margin-bottom:6px">'+t('total')+': '+totalCases.toLocaleString()+' '+t('cases')+' · '+totalDeaths.toLocaleString()+' '+t('deaths')+' · CFR '+pct(totalDeaths,totalCases)+'</div></div>';
+
+    document.getElementById('modal-content').innerHTML=h;
+    document.getElementById('modal').classList.add('show');
+}
+
+function closeModal(e){
+    if(!e||e.target.classList.contains('modal-overlay')||e.target.classList.contains('modal-close'))
+        document.getElementById('modal').classList.remove('show');
+}
+
+window.addEventListener('load',init);
+window.addEventListener('resize',function(){if(map)map.invalidateSize()});
 </script>
 </body>
 </html>
