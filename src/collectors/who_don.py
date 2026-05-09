@@ -220,66 +220,52 @@ class WHODONCollector:
     def _extract_counts(self, text: str) -> tuple[int, int, int]:
         cases, deaths, suspected = 0, 0, 0
 
-        sentences = re.split(r'(?<=[.!?])\s+', text)
-        first_sentence = sentences[0] if sentences else text
-
-        m = re.search(r"(\w+|\d+)\s+cases?\s*\(.*?(\w+|\d+)\s+(?:laboratory\s+)?confirmed.*?(\w+|\d+)\s+suspected", first_sentence, re.I)
+        # Pattern: "a total of X cases" (most reliable)
+        m = re.search(r"a\s+total\s+of\s+(\d[\d\s,]+)\s+(?:\w+\s+)*?cases?", text, re.I)
         if m:
-            cases = self._word_to_num(m.group(1))
-            suspected = self._word_to_num(m.group(3))
+            cases = self._word_to_num(m.group(1).strip().replace(",","").replace(" ",""))
 
+        # Pattern: "X confirmed cases"
         if cases == 0:
-            m = re.search(r"a\s+total\s+of\s+(\d[\d\s,]*)\s+(?:\w+\s+)*?(?:confirmed\s+|suspected\s+)?cases?", first_sentence, re.I)
-            if m and m.group(1).strip():
-                try:
-                    num_str = m.group(1).strip().replace(",", "").replace(" ", "")
-                    if num_str.isdigit():
-                        cases = int(num_str)
-                except ValueError:
-                    pass
+            m = re.search(r"(\d[\d,]*)\s+(?:confirmed|suspected)\s+(?:\w+\s+)?cases?", text, re.I)
+            if m:
+                cases = self._word_to_num(m.group(1).replace(",",""))
 
+        # Pattern: word number + cases: "seven cases", "eight cases"
         if cases == 0:
-            m = re.search(r"(\d[\d,]*)\s+(?:suspected|confirmed)\s+(?:\w+\s+)?cases?", first_sentence, re.I)
-            if m and m.group(1).strip():
-                try:
-                    num_str = m.group(1).strip().replace(",", "")
-                    if num_str.isdigit():
-                        cases = int(num_str)
-                except ValueError:
-                    pass
+            m = re.search(r"(\w+)\s+cases?\s*[,(]", text, re.I)
+            if m:
+                n = self._word_to_num(m.group(1))
+                if n > 0:
+                    cases = n
 
-        if cases == 0:
-            all_case_matches = list(re.finditer(r"(\d[\d\s]*\d)\s+(?:\w+\s+){0,3}cases?", first_sentence, re.I))
-            for match in reversed(all_case_matches):
-                try:
-                    num_str = match.group(1).strip().replace(",", "").replace(" ", "")
-                    if num_str.isdigit() and len(num_str) > 0:
-                        cases = int(num_str)
-                        break
-                except ValueError:
-                    pass
+        # Deaths: "including X deaths"
+        m = re.search(r"including\s+(\w+|\d[\d,]*)\s+deaths?", text, re.I)
+        if m:
+            deaths = self._word_to_num(m.group(1).strip().replace(",",""))
 
-        for p in [r"including\s+(\w+|\d+)\s+death", r"(\d[\d\s,]*)\s+death", r"(\d[\d\s,]*)\s+died"]:
-            m = re.search(p, first_sentence, re.I)
-            if m and m.group(1).strip():
-                val = m.group(1).strip().replace(",", "").replace(" ", "")
-                if val.isdigit():
-                    v = int(val)
-                    if cases == 0 or v <= cases:
-                        deaths = v
-                else:
-                    deaths = self._word_to_num(m.group(1).strip())
-                break
+        # Deaths: "X deaths"
+        if deaths == 0:
+            m = re.search(r"(\d[\d,]*)\s+deaths?", text, re.I)
+            if m:
+                deaths = self._word_to_num(m.group(1).replace(",",""))
 
-        if suspected == 0:
-            m = re.search(r"([\d\s,]+)\s+suspected", first_sentence, re.I)
-            if m and m.group(1).strip():
-                try:
-                    num_str = m.group(1).strip().replace(",", "").replace(" ", "")
-                    if num_str.isdigit():
-                        suspected = int(num_str)
-                except ValueError:
-                    pass
+        # Deaths: word number
+        if deaths == 0:
+            m = re.search(r"(\w+)\s+deaths?\s*[,(.]", text, re.I)
+            if m:
+                n = self._word_to_num(m.group(1))
+                if n > 0:
+                    deaths = n
+
+        # Suspected
+        m = re.search(r"(\d[\d,]*)\s+suspected", text, re.I)
+        if m:
+            suspected = int(m.group(1).replace(",",""))
+
+        # Sanity: deaths cannot exceed cases
+        if deaths > cases and cases > 0:
+            deaths = cases
 
         return cases, deaths, suspected
 

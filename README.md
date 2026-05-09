@@ -1,91 +1,108 @@
 # 🌍 Global Epidemic Tracker
 
+> **CDC is dead, we protect the people.**
+>
 > **"El pueblo unido jamás será vencido"**
 
-[![Dashboard](https://img.shields.io/badge/Live-Dashboard-brightgreen?style=for-the-badge&logo=googlechrome&logoColor=white)](https://mrlmrml.github.io/epidemic-tracker/)
-[![Actions](https://github.com/MRLMRML/epidemic-tracker/actions/workflows/update-data.yml/badge.svg)](https://github.com/MRLMRML/epidemic-tracker/actions)
+[![Live Dashboard](https://img.shields.io/badge/Live-Dashboard-brightgreen?style=for-the-badge&logo=googlechrome&logoColor=white)](https://mrlmrml.github.io/epidemic-tracker/)
+[![Auto Update](https://github.com/MRLMRML/epidemic-tracker/actions/workflows/update-data.yml/badge.svg)](https://github.com/MRLMRML/epidemic-tracker/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-Real-time monitoring of global disease outbreaks. Data sourced from WHO Disease Outbreak News, cross-validated against independent news outlets. Auto-updates every 6 hours.
+---
 
-## Dashboard
+An open-source, real-time global epidemic monitoring system. We aggregate outbreak data from WHO Disease Outbreak News, cross-validate against independent news outlets, and present it in a multilingual interactive dashboard that anyone can use.
 
-**[→ Open Dashboard](https://mrlmrml.github.io/epidemic-tracker/)**
+When institutions fail, the people must protect themselves.
 
-The dashboard supports **8 languages** (中文, English, Español, Русский, العربية, فارسی, Deutsch, Français, Português) and features:
+## 🖥️ Dashboard
 
-- Interactive world map with cluster markers
-- Severity-ranked outbreak list (Critical → Low)
-- Disease breakdown with case/death/CFR statistics
-- Risk analysis panel with H2H transmission alerts
-- Scrolling news ticker
-- News cross-validation indicators
+**[→ mrlmrml.github.io/epidemic-tracker](https://mrlmrml.github.io/epidemic-tracker/)**
 
-## Data Pipeline
+- Interactive world map with cluster markers and severity coloring
+- Multilingual: 中文 · English · Español · Русский · العربية · فارسی · Deutsch · Français · Português
+- Risk alerts for dangerous outbreaks with H2H transmission warnings
+- Disease search with hover tooltips for quick info
+- Auto-updated every 6 hours via GitHub Actions
+- News cross-validation indicators (✓ Verified / ? Unverified)
+
+## 🔧 How It Works
+
+```
+   WHO Disease Outbreak News API
+              ↓
+      Data Collection (all diseases)
+              ↓
+      News Cross-Validation
+      (Bing News · Google News · Reddit)
+              ↓
+      Risk Analysis & Severity Classification
+              ↓
+      JSON/GeoJSON Export → GitHub Pages
+              ↓
+      Interactive Dashboard (auto-refresh)
+```
+
+### Run Locally
 
 ```bash
-# Install
 pip install requests
 
-# Fetch from WHO DON API, cross-validate with news, export
+# Full pipeline
 python3 scripts/fetch_data.py --fetch --validate --summary
 
-# Export JSON + GeoJSON for dashboard
+# Filter by disease
+python3 scripts/fetch_data.py --fetch --disease cholera --summary
+
+# Export for dashboard
 python3 scripts/fetch_data.py --fetch --validate --export-json --export-geojson
 ```
 
-### How It Works
+## 🤖 Agent Integration
+
+This project ships a `SKILL.md` for AI agent frameworks. Load it as a skill to enable natural-language epidemic queries.
 
 ```
-WHO Disease Outbreak News API
-        ↓
-   Data Collector (all diseases)
-        ↓
-   News Cross-Validation
-   (Bing News · Google News · Reddit)
-        ↓
-   Aggregator + Risk Analysis
-        ↓
-   JSON / GeoJSON Export
-        ↓
-   GitHub Pages Dashboard
-   (auto-updated via GitHub Actions)
+User: "What cholera outbreaks are active right now?"
+Agent: [loads skill] → [runs pipeline] → [presents data with sources]
 ```
 
-## Agent Integration
+## 📡 Data Sources & Validation
 
-This project includes a `SKILL.md` file for AI agent frameworks. Load it as a skill to enable natural language epidemic queries.
-
-**Trigger keywords**: epidemic, outbreak, disease, cholera, ebola, dengue, mpox, hantavirus, measles, influenza, meningitis, yellow fever, MERS, nipah, lassa, marburg
-
-## Data Sources
-
-| Source | What | Update |
+| Source | Role | Method |
 |--------|------|--------|
-| WHO DON API | Global outbreak alerts | Event-driven |
-| Bing News | Cross-validation | Per-run |
-| Google News RSS | Cross-validation | Per-run |
-| Reddit | Community reports | Per-run |
+| **WHO Disease Outbreak News** | Primary outbreak data | REST API, event-driven |
+| **Bing News** | Cross-validation | RSS search |
+| **Google News** | Cross-validation | RSS search |
+| **Reddit** | Community signal | API search |
 
-## Diseases Tracked
+Every outbreak is scored and validated: if 2+ independent news sources corroborate the WHO report, it's marked ✓ Verified.
 
-Cholera, Ebola, Marburg, Mpox, Dengue, Measles, Influenza, Hantavirus, Yellow Fever, Meningitis, Polio, MERS, Nipah, Rift Valley Fever, West Nile Virus, Lassa Fever, Crimean-Congo HF, Plague, Anthrax, Chikungunya, Rabies, Zika, COVID-19, and more.
+## 🦠 Diseases Tracked
 
-## Project Structure
+Cholera · Ebola · Marburg · Mpox · Dengue · Measles · Influenza · Hantavirus · Yellow Fever · Meningitis · Polio · MERS · Nipah · Rift Valley Fever · West Nile · Lassa Fever · CCHF · Plague · Anthrax · Chikungunya · Diphtheria · Hepatitis E · COVID-19 · Rabies · Zika · and more.
+
+## 📁 Structure
 
 ```
-├── SKILL.md                          # Agent skill
-├── scripts/fetch_data.py             # CLI pipeline
+├── SKILL.md                          # AI agent skill
+├── scripts/fetch_data.py             # Data pipeline CLI
 ├── src/
-│   ├── collectors/who_don.py         # WHO DON collector
-│   ├── validation/news_validator.py  # News cross-validation
-│   └── collectors/aggregator.py      # Aggregation + analysis
+│   ├── collectors/who_don.py         # WHO DON API collector
+│   ├── collectors/aggregator.py      # Aggregation + risk analysis
+│   └── validation/news_validator.py  # News cross-validation
 ├── site/
-│   ├── index.html                    # Dashboard
-│   └── data/                         # Real-time data
-└── .github/workflows/update-data.yml # Auto-update cron
+│   ├── index.html                    # Dashboard (single-file)
+│   └── data/                         # Live data (JSON/GeoJSON)
+└── .github/workflows/                # Auto-update cron (6h)
 ```
 
-## License
+## 🤝 Contributing
 
-MIT
+- Add a new data source collector
+- Improve disease name translations
+- Fix data extraction accuracy
+- Improve dashboard UI/UX
+
+## 📜 License
+
+MIT — Use it, fork it, deploy it. The people's data belongs to the people.
