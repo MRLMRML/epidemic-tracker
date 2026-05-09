@@ -42,7 +42,7 @@
         "cfr": 0.0,
         "severity": "very_high",
         "h2h": false,
-        "verified": false,
+        "verified": true,
         "source_url": "https://www.who.int/emergencies/disease-outbreak-news/2026-DON598",
         "date": "2026-04-23"
       }
@@ -1146,7 +1146,7 @@
         "cfr": 0.0002,
         "severity": "very_high",
         "h2h": false,
-        "verified": false,
+        "verified": true,
         "source_url": "https://www.who.int/emergencies/disease-outbreak-news/2024-DON545",
         "date": "2024-12-05"
       }
@@ -7494,7 +7494,7 @@
         "cfr": 0.0,
         "severity": "very_high",
         "h2h": false,
-        "verified": true,
+        "verified": false,
         "source_url": "https://www.who.int/data/gho/data/indicators/indicator-details/GHO/measles",
         "date": "2024-12-31"
       }
@@ -8230,7 +8230,7 @@
         "cfr": 0.0,
         "severity": "very_high",
         "h2h": false,
-        "verified": true,
+        "verified": false,
         "source_url": "https://www.who.int/data/gho/data/indicators/indicator-details/GHO/diphtheria",
         "date": "2024-12-31"
       }
