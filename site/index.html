@@ -42,6 +42,11 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 36px 10px 10px;margin-bottom:5px;cursor:pointer;border-left:3px solid transparent;transition:all 0.15s;position:relative}
 .card:hover{transform:translateX(2px);border-color:var(--accent);box-shadow:0 2px 12px rgba(0,212,170,0.08)}
 .card.c1{border-left-color:var(--red)}.card.c2{border-left-color:var(--amber)}.card.c3{border-left-color:var(--accent2)}.card.c4{border-left-color:var(--green)}
+.ri{position:absolute;bottom:6px;left:8px;font-size:9px;padding:2px 6px;border-radius:3px;font-weight:600;opacity:0.8}
+.ri.c1{background:rgba(255,71,87,0.15);color:var(--red)}
+.ri.c2{background:rgba(255,165,2,0.15);color:var(--amber)}
+.ri.c3{background:rgba(0,180,216,0.15);color:var(--accent2)}
+.ri.c4{background:rgba(46,213,115,0.15);color:var(--green)}
 .ch{display:flex;justify-content:space-between;align-items:center;margin-bottom:3px}
 .cn{font-size:13px;font-weight:600;color:var(--bright);position:relative;cursor:help}.cn:hover .tp{display:block}
 .tp{display:none;position:absolute;top:100%;left:0;background:var(--bg);border:1px solid var(--accent);border-radius:8px;padding:10px;font-size:11px;font-weight:400;color:var(--text);width:260px;z-index:50;line-height:1.5;box-shadow:0 4px 16px rgba(0,0,0,0.5)}
@@ -125,10 +130,10 @@ function popD(){
 
 function tSC(iso){pC.has(iso)?pC.delete(iso):pC.add(iso);popD()}
 function confirmC(){sC=new Set(pC);closD();if(allData)render(allData)}
-function cancelC(){pC=new Set(sC);closD();uB()}
+function cancelC(){sC.clear();pC.clear();closD();uB();if(allData)render(allData)}
 function tSD(d){pD.has(d)?pD.delete(d):pD.add(d);popD()}
 function confirmD(){sD=new Set(pD);closD();if(allData)render(allData)}
-function cancelD(){pD=new Set(sD);closD();uB()}
+function cancelD(){sD.clear();pD.clear();closD();uB();if(allData)render(allData)}
 
 function uB(){
     var cb=document.getElementById("cbtn"),db=document.getElementById("dbtn");
@@ -226,10 +231,10 @@ function rS(o){
         var h2h=x.h2h?'<span class="tg th">H2H</span>':"";
         var sevTip=x.severity==="very_high"?"Very high severity":x.severity==="high"?"High severity":x.severity==="moderate"?"Moderate severity":"Low severity";
         h+="<div class='card "+cls+"' data-d='"+x.disease+"' onclick='opD(this.dataset.d)'>";
-        h+="<div class='ch'><span class='cn'>"+dn(x.disease)+tt+"</span><span class='bg "+bg+"'>"+sL(x.severity)+"</span></div>";
+        var st=x.severity;var stT=st==='very_high'?'\u6781\u9ad8: \u5927\u89c4\u6a21\u75ab\u60c5/\u9ad8\u81f4\u6b7b\u7387':st==='high'?'\u9ad8: \u6d3b\u8dc3\u75ab\u60c5':st==='moderate'?'\u4e2d\u7b49: \u5730\u65b9\u6027\u6d41\u884c':'\u4f4e: \u5c11\u91cf\u75c5\u4f8b';h+="<div class='ch'><span class='cn'>"+dn(x.disease)+tt+"</span><span class='bg "+bg+"' title='"+stT+"'>"+sL(x.severity)+"</span></div>";
         h+="<div class='ci'>"+x.countries.size+" "+i("co")+"</div>";
         h+="<div class='cn2'><span>"+i("ca")+": <b>"+fmt(x.cases)+"</b></span><span>"+i("de")+": <b>"+fmt(x.deaths)+"</b></span><span>CFR: "+pct(x.deaths,x.cases)+"</span></div>";
-        h+="<div class='ct'>"+h2h+"<button class='hide-btn' onclick='event.stopPropagation();hideDisease(\""+x.disease+"\")'>\u2715</button></div></div>";
+        h+="<div class='ct'>"+h2h+"<button class='hide-btn' onclick='event.stopPropagation();hideDisease(\""+x.disease+"\")'>\u2715</button></div><div class='ri "+cls+"' title='"+stT+"'>"+sL(x.severity)+"</div></div>";
     });
     document.getElementById("side").innerHTML=h;
 }
