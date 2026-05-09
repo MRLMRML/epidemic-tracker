@@ -18,15 +18,15 @@ a{color:var(--accent2);text-decoration:none}
 @keyframes ns{0%{transform:translateY(0)}100%{transform:translateY(-50%)}}
 .ni{height:30px;line-height:30px;padding:0 14px;font-size:12px;white-space:nowrap;overflow:hidden}
 .ni .d{color:var(--red);margin-right:8px}
-.bar{background:var(--panel);border-bottom:1px solid var(--border);padding:8px 16px;display:flex;gap:10px;align-items:center}
-.ms{position:relative;min-width:160px}
+.bar{background:var(--panel);border-bottom:1px solid var(--border);padding:8px 16px;display:flex;gap:10px;align-items:center;justify-content:flex-end}
+.ms{position:relative;min-width:200px;width:220px}
 .mb{background:var(--card);color:var(--text);border:1px solid var(--border);padding:5px 10px;border-radius:6px;font-size:12px;font-family:inherit;cursor:pointer;width:100%;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mb:hover{border-color:var(--accent)}.mb.hv{color:var(--accent);border-color:var(--accent)}
-.md{display:none;position:absolute;top:100%;left:0;right:0;background:var(--card);border:1px solid var(--border);border-top:none;border-radius:0 0 6px 6px;max-height:250px;overflow-y:auto;z-index:200}.md.op{display:block}
+.md{display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--card);border:1px solid var(--accent);border-radius:8px;max-height:350px;overflow-y:auto;z-index:9999;box-shadow:0 8px 24px rgba(0,0,0,0.5)}.md.op{display:block}
 .md input{width:100%;padding:6px 8px;background:var(--bg);border:none;border-bottom:1px solid var(--border);color:var(--bright);font-size:12px;font-family:inherit;outline:none}
 .md .o{padding:5px 10px;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:6px;border-bottom:1px solid rgba(37,48,80,0.3)}.md .o:hover{background:var(--border)}.md .o.sl{color:var(--accent)}
 .md .o .c{width:14px;height:14px;border:1px solid var(--border);border-radius:3px;display:flex;align-items:center;justify-content:center;flex-shrink:0}.md .o.sl .c{background:var(--accent);border-color:var(--accent)}
-.rb{background:transparent;color:var(--muted);border:1px solid var(--border);padding:5px 10px;border-radius:6px;font-size:11px;cursor:pointer;font-family:inherit}.rb:hover{color:var(--red);border-color:var(--red)}
+.rb{background:transparent;color:var(--muted);border:1px solid var(--border);padding:5px 16px;border-radius:6px;font-size:11px;cursor:pointer;font-family:inherit;white-space:nowrap}.rb:hover{color:var(--red);border-color:var(--red)}
 .st{display:grid;grid-template-columns:repeat(5,1fr);border-bottom:1px solid var(--border)}
 .si{background:var(--panel);padding:10px 8px;text-align:center;border-right:1px solid var(--border)}.si:last-child{border-right:none}
 .sv{font-size:20px;font-weight:700}.sl{font-size:10px;color:var(--muted);text-transform:uppercase;margin-top:2px}
@@ -42,6 +42,7 @@ a{color:var(--accent2);text-decoration:none}
 .bg{font-size:10px;padding:2px 7px;border-radius:4px;font-weight:700}
 .b1{background:rgba(255,71,87,0.15);color:var(--red)}.b2{background:rgba(255,165,2,0.15);color:var(--amber)}.b3{background:rgba(0,180,216,0.15);color:var(--accent2)}.b4{background:rgba(46,213,115,0.15);color:var(--green)}
 .ci{font-size:11px;color:var(--muted);margin-bottom:3px}
+.vbtn{background:var(--accent);color:var(--bg);border:none;padding:3px 10px;border-radius:4px;font-size:10px;cursor:pointer;font-weight:700;margin-top:4px;font-family:inherit}.vbtn:hover{opacity:0.8}
 .cn2{display:flex;gap:10px;font-size:12px}.cn2 b{color:var(--bright)}
 .ct{display:flex;gap:4px;margin-top:4px;font-size:10px}.tg{padding:2px 5px;border-radius:3px}.th{background:rgba(255,71,87,0.12);color:var(--red)}
 .mbg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:1000;align-items:center;justify-content:center}.mbg.op{display:flex}
@@ -121,13 +122,17 @@ function rS(o){
         var tip=tp(x.disease);
         var tt=tip?`<span class="tp">${tip}</span>`:"";
         var h2h=x.h2h?`<span class="tg th">H2H</span>`:"";
-        h+=`<div class="card ${cls}" data-d="${x.disease}" onclick="opD(this.dataset.d)">`;
+        h+=`<div class="card ${cls}" data-d="${x.disease}" onclick="filterDisease(this.dataset.d)">`;
         h+=`<div class="ch"><span class="cn">${dn(x.disease)}${tt}</span><span class="bg ${bg}">${sL(x.severity)}</span></div>`;
         h+=`<div class="ci">${x.countries.size} ${i("co")}</div>`;
         h+=`<div class="cn2"><span>${i("ca")}: <b>${fmt(x.cases)}</b></span><span>${i("de")}: <b>${fmt(x.deaths)}</b></span><span>CFR: ${pct(x.deaths,x.cases)}</span></div>`;
-        h+=`<div class="ct">${h2h}</div></div>`;
+        h+=`<div class="ct">${h2h}<button class="vbtn" onclick="event.stopPropagation();opD('${x.disease.replace(/'/g,"\'")}')">查看数据</button></div></div>`;
     });
     document.getElementById("side").innerHTML=h;
+}
+
+function filterDisease(disease){
+    sD.clear();sD.add(disease);popD();doF();
 }
 
 function opD(disease){sD.clear();sD.add(disease);popD();doF();var items=allData.outbreaks.filter(function(x){return x.disease===disease});var tc=0,td=0;items.forEach(function(x){tc+=x.cases||0;td+=x.deaths||0});var tip=tp(disease);var now=new Date();var p7=0,p30=0,p180=0;items.forEach(function(x){var d=(now-new Date(x.date_reported))/86400000;if(d<=7)p7+=x.cases||0;if(d<=30)p30+=x.cases||0;if(d<=180)p180+=x.cases||0});var h='<button class="mcl" onclick="cloD()">&times;</button>';h+="<h2>"+dn(disease)+"</h2>";if(tip)h+='<p style="font-size:12px;color:var(--text);margin-bottom:10px">'+tip+"</p>";h+='<div style="font-size:12px;color:var(--muted);margin-bottom:10px">'+items.length+" outbreaks \xb7 "+new Set(items.map(function(x){return x.country_iso3})).size+" "+i("co")+"</div>";h+='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px">';h+='<div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:700;color:var(--red)">'+fmt(p7||null)+'</div><div style="font-size:10px;color:var(--muted)">'+i("d7")+"</div></div>";h+='<div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:700;color:var(--amber)">'+fmt(p30||null)+'</div><div style="font-size:10px;color:var(--muted)">'+i("d3")+"</div></div>";h+='<div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:700;color:var(--accent2)">'+fmt(p180||null)+'</div><div style="font-size:10px;color:var(--muted)">'+i("d6")+"</div></div></div>";h+='<div class="pb"><button class="pbtn" onclick="dC(\''+disease.replace(/'/g,"\\'")+"',7)\">"+i("d7")+'</button><button class="pbtn on" onclick="dC(\''+disease.replace(/'/g,"\\'")+"',30)\">"+i("d3")+'</button><button class="pbtn" onclick="dC(\''+disease.replace(/'/g,"\\'")+"',180)\">"+i("d6")+"</button></div>";h+='<div class="cbox"><canvas id="dc"></canvas></div>';h+='<div style="font-size:13px;color:var(--bright);font-weight:600">'+i("to")+": "+(tc?tc.toLocaleString():"\u2014")+" "+i("ca")+" \xb7 "+(td?td.toLocaleString():"\u2014")+" "+i("de")+" \xb7 CFR "+pct(td,tc)+"</div>";document.getElementById("dm").innerHTML=h;document.getElementById("dbg").classList.add("op");setTimeout(function(){dC(disease,30)},100)}
