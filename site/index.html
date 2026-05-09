@@ -112,8 +112,8 @@ function onSearch(){
     allData.outbreaks.forEach(function(x){
         var dname=dn(x.disease).toLowerCase();var ename=x.disease.toLowerCase();
         if(dname.indexOf(q)>=0||ename.indexOf(q)>=0)hits[x.disease]=dn(x.disease);
-        var cname=cn(x.country_iso3,x.location).toLowerCase();
-        if(cname.indexOf(q)>=0)hits['@'+x.country_iso3]=cn(x.country_iso3,x.location);
+        var cname=cn(x.country_iso3).toLowerCase();
+        if(cname.indexOf(q)>=0)hits['@'+x.country_iso3]=cn(x.country_iso3);
     });
     for(var k in ALIAS){if(k.indexOf(q)>=0)ALIAS[k].forEach(function(a){hits[a]=dn(a)||a})}
     var keys=Object.keys(hits).slice(0,8);
@@ -129,11 +129,16 @@ function pickSug(val,isC){
 }
 
 function populateC(){
-    if(!allData)return;var sel=document.getElementById('csel'),v=sel.value;
-    sel.innerHTML='<option value="">'+i('allc')+'</option>';
-    var seen={};allData.outbreaks.forEach(function(o){if(o.country_iso3)seen[o.country_iso3]=o.location});
-    var keys=Object.keys(seen).filter(function(k){var name=cn(k,seen[k]);return name&&name.length>3});
-    keys.sort(function(a,b){return cn(a,seen[a]).localeCompare(cn(b,seen[b]))});
+    if(!allData)return;
+    var cs=document.getElementById('csel'),ds=document.getElementById('dsel');
+    var cv=cs.value,dv=ds.value;
+    cs.innerHTML='<option value="">'+i('allc')+'</option>';
+    ds.innerHTML='<option value="">'+i('alld')+'</option>';
+    var countries={},diseases={};
+    allData.outbreaks.forEach(function(o){if(o.country_iso3)countries[o.country_iso3]=1;diseases[o.disease]=1});
+    Object.keys(countries).sort(function(a,b){return cn(a).localeCompare(cn(b))}).forEach(function(iso){var opt=document.createElement('option');opt.value=iso;opt.textContent=cn(iso);cs.appendChild(opt)});
+    Object.keys(diseases).sort(function(a,b){return dn(a).localeCompare(dn(b))}).forEach(function(d){var opt=document.createElement('option');opt.value=d;opt.textContent=dn(d);ds.appendChild(opt)});
+    cs.value=cv;ds.value=dv;
     keys.forEach(function(iso){var opt=document.createElement('option');opt.value=iso;opt.textContent=cn(iso,seen[iso]);sel.appendChild(opt)});
     sel.value=v;
 }
@@ -151,16 +156,17 @@ function load(){fetch('data/epidemics.json').then(function(r){return r.json()}).
 
 function render(d){
     var o=d.outbreaks.slice();var q=document.getElementById('q').value.toLowerCase();var c=document.getElementById('csel').value;
-    if(q){o=o.filter(function(x){var hay=(x.disease+' '+dn(x.disease)+' '+x.location+' '+cn(x.country_iso3,x.location)).toLowerCase();if(hay.indexOf(q)>=0)return true;for(var k in ALIAS){if(q.indexOf(k)>=0){var found=false;ALIAS[k].forEach(function(a){if(x.disease===a)found=true});if(found)return true}}return false})}
+    if(q){o=o.filter(function(x){var hay=(x.disease+' '+dn(x.disease)+' '+x.location+' '+cn(x.country_iso3)).toLowerCase();if(hay.indexOf(q)>=0)return true;for(var k in ALIAS){if(q.indexOf(k)>=0){var found=false;ALIAS[k].forEach(function(a){if(x.disease===a)found=true});if(found)return true}}return false})}
     if(c){o=o.filter(function(x){return x.country_iso3===c});var pts=o.filter(function(x){return x.latitude});if(pts.length){var lt=pts.reduce(function(s,x){return s+x.latitude},0)/pts.length;var ln=pts.reduce(function(s,x){return s+x.longitude},0)/pts.length;map.flyTo([lt,ln],5,{duration:1})}}
+    if(c||dis){var pts=o.filter(function(x){return x.latitude});if(pts.length){var lt=pts.reduce(function(s,x){return s+x.latitude},0)/pts.length;var ln=pts.reduce(function(s,x){return s+x.longitude},0)/pts.length;map.flyTo([lt,ln],dis?3:5,{duration:1})}}
     var tc=0,td=0;o.forEach(function(x){tc+=x.cases||0;td+=x.deaths||0});
     document.getElementById('stats').innerHTML='<div class="st"><div class="sv">'+o.length+'</div><div class="sl">'+i('active')+'</div></div><div class="st"><div class="sv">'+fmt(tc||null)+'</div><div class="sl">'+i('cases')+'</div></div><div class="st"><div class="sv">'+fmt(td||null)+'</div><div class="sl">'+i('deaths')+'</div></div><div class="st"><div class="sv">'+pct(td,tc)+'</div><div class="sl">'+i('cfr')+'</div></div><div class="st"><div class="sv">'+new Set(o.map(function(x){return x.country_iso3})).size+'</div><div class="sl">'+i('countries')+'</div></div>';
     renderMap(o);renderNews(d.outbreaks);renderSide(o);
 }
 
-function renderMap(o){cl.clearLayers();o.forEach(function(x){if(!x.latitude)return;var c=SC[x.severity]||'#657786',r=Math.max(4,Math.min(18,Math.sqrt(x.cases||1)*1.1));var m=L.circleMarker([x.latitude,x.longitude],{radius:r,color:c,fillColor:c,fillOpacity:0.4,weight:1.5});m.bindPopup('<b>'+dn(x.disease)+'</b>'+(x.h2h_transmission?' <b style="color:#f4212e">H2H</b>':'')+'<br>📍 '+cn(x.country_iso3,x.location)+'<br>'+i('cases')+': <b>'+fmt(x.cases)+'</b> · '+i('deaths')+': <b>'+fmt(x.deaths)+'</b>'+(x.source_url?'<br><a href="'+x.source_url+'" target="_blank">WHO →</a>':''));cl.addLayer(m)})}
+function renderMap(o){cl.clearLayers();o.forEach(function(x){if(!x.latitude)return;var c=SC[x.severity]||'#657786',r=Math.max(4,Math.min(18,Math.sqrt(x.cases||1)*1.1));var m=L.circleMarker([x.latitude,x.longitude],{radius:r,color:c,fillColor:c,fillOpacity:0.4,weight:1.5});m.bindPopup('<b>'+dn(x.disease)+'</b>'+(x.h2h_transmission?' <b style="color:#f4212e">H2H</b>':'')+'<br>📍 '+cn(x.country_iso3)+'<br>'+i('cases')+': <b>'+fmt(x.cases)+'</b> · '+i('deaths')+': <b>'+fmt(x.deaths)+'</b>'+(x.source_url?'<br><a href="'+x.source_url+'" target="_blank">WHO →</a>':''));cl.addLayer(m)})}
 
-function renderNews(o){var top=o.filter(function(x){return x.description&&x.cases>0}).sort(function(a,b){return new Date(b.date_reported)-new Date(a.date_reported)}).slice(0,12);var h='';top.forEach(function(x){h+='<div class="ni"><span class="dot">●</span>'+dn(x.disease)+' — '+cn(x.country_iso3,x.location)+': '+(x.description||'').substring(0,60)+'</div>'});document.getElementById('nlist').innerHTML=h+h}
+function renderNews(o){var top=o.filter(function(x){return x.description&&x.cases>0}).sort(function(a,b){return new Date(b.date_reported)-new Date(a.date_reported)}).slice(0,12);var h='';top.forEach(function(x){h+='<div class="ni"><span class="dot">●</span>'+dn(x.disease)+' — '+cn(x.country_iso3)+': '+(x.description||'').substring(0,60)+'</div>'});document.getElementById('nlist').innerHTML=h+h}
 
 function renderSide(o){
     var g={};o.forEach(function(x){var k=x.disease;if(!g[k])g[k]={disease:k,cases:0,deaths:0,severity:'low',h2h:false,countries:new Set(),confidence:'pending',source_url:''};var d=g[k];d.cases+=x.cases||0;d.deaths+=x.deaths||0;d.countries.add(x.country_iso3);if(x.h2h_transmission)d.h2h=true;if((SEV_ORD[x.severity]||9)<(SEV_ORD[d.severity]||9))d.severity=x.severity;if(x.confidence==='high')d.confidence='high';if(x.source_url&&!d.source_url)d.source_url=x.source_url});
@@ -174,7 +180,7 @@ function renderSide(o){
     document.getElementById('side').innerHTML=h;
 }
 
-function openNews(){var o=allData.outbreaks.filter(function(x){return x.description&&x.cases>0}).sort(function(a,b){return new Date(b.date_reported)-new Date(a.date_reported)}).slice(0,30);var h='';o.forEach(function(x){h+='<div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:12px"><span style="color:var(--red)">●</span> <b>'+dn(x.disease)+'</b> — '+cn(x.country_iso3,x.location)+'<br><span style="color:var(--text)">'+x.description.substring(0,120)+'</span>'+(x.source_url?' <a href="'+x.source_url+'" target="_blank">WHO→</a>':'')+'</div>'});document.getElementById('nall').innerHTML=h;document.getElementById('ntitle').textContent=i('brk');document.getElementById('nbg').classList.add('open')}
+function openNews(){var o=allData.outbreaks.filter(function(x){return x.description&&x.cases>0}).sort(function(a,b){return new Date(b.date_reported)-new Date(a.date_reported)}).slice(0,30);var h='';o.forEach(function(x){h+='<div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:12px"><span style="color:var(--red)">●</span> <b>'+dn(x.disease)+'</b> — '+cn(x.country_iso3)+'<br><span style="color:var(--text)">'+x.description.substring(0,120)+'</span>'+(x.source_url?' <a href="'+x.source_url+'" target="_blank">WHO→</a>':'')+'</div>'});document.getElementById('nall').innerHTML=h;document.getElementById('ntitle').textContent=i('brk');document.getElementById('nbg').classList.add('open')}
 
 function openD(disease){
     var items=allData.outbreaks.filter(function(x){return x.disease===disease});
