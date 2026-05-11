@@ -68,7 +68,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 <body>
 <div class="top">CDC is dead, we protect the people. — El pueblo unido jamás será vencido</div>
 <div class="hdr"><h1>🌍 GLOBAL EPIDEMIC TRACKER</h1><span style="font-size:12px;color:var(--accent)">中文</span></div>
-<div class="news" onclick="openNews()"><div class="nlbl">突发</div><div class="nwrap"><div class="ninner" id="nlist"></div></div></div>
+<div class="news" onclick="openNews()"><div class="nlbl">突发新闻</div><div class="nwrap"><div class="ninner" id="nlist"></div></div></div>
 <div class="bar">
 <div class="ms"><div class="mb" id="cbtn" onclick="togD('c')">所有国家</div><div class="md" id="cdd"><div id="copts"></div></div></div>
 <div class="ms"><div class="mb" id="dbtn" onclick="togD('d')">所有疾病</div><div class="md" id="ddd"><div id="dopts"></div></div></div>
@@ -76,8 +76,8 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 </div>
 <div class="st" id="stats"></div>
 <div class="main"><div id="map"></div><div class="side" id="side"></div></div>
-<div class="ftr"><a href="https://github.com/MRLMRML/epidemic-tracker" target="_blank" style="color:var(--accent)">GitHub</a> · DATA: WHO DON · WHO GHO · OWID | VALIDATION: Bing · Google · Reddit</div>
-<div class="mbg" id="nbg" onclick="if(event.target===this)this.classList.remove('op')"><div class="mod"><button class="mcl" onclick="cloN()">&times;</button><h2 id="nt">Breaking News</h2><div id="na" style="max-height:60vh;overflow-y:auto"></div></div></div>
+<div class="ftr"><a href="https://github.com/MRLMRML/epidemic-tracker" target="_blank" style="color:var(--accent)">GitHub</a> · 数据来源: WHO疾病暴发新闻 · WHO全球卫生观测 · OWID | 交叉验证: 必应 · 谷歌 · Reddit</div>
+<div class="mbg" id="nbg" onclick="if(event.target===this)this.classList.remove('op')"><div class="mod"><button class="mcl" onclick="cloN()">&times;</button><h2 id="nt">突发新闻</h2><div id="na" style="max-height:60vh;overflow-y:auto"></div></div></div>
 <div class="mbg" id="dbg" onclick="if(event.target===this)this.classList.remove('op')"><div class="mod" id="dm"></div></div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
@@ -118,13 +118,13 @@ function popD(){
     Object.keys(co).sort(function(a,b){return cn(a).localeCompare(cn(b))}).forEach(function(iso){
         ch+="<div class='o"+(pC.has(iso)?" sl":"")+"' data-iso='"+iso+"' onclick='tSC(this.dataset.iso)'><span class='c'></span>"+cn(iso)+"</div>";
     });
-    ch="<div style='padding:6px;position:sticky;top:0;background:var(--card);z-index:1'><input type='text' id='csearch' placeholder='搜索国家...' oninput='filterCOptions(this.value)' style='width:100%;padding:6px 8px;background:var(--bg);border:1px solid var(--border);border-radius:4px;color:var(--bright);font-size:12px;font-family:inherit;outline:none'></div>"+ch;ch+="<div style='padding:8px;display:flex;gap:6px;border-top:1px solid var(--border);position:sticky;bottom:0;background:var(--card)'><button class='rb' onclick='cancelC()' style='flex:1'>✕</button><button onclick='confirmC()' style='flex:1;background:var(--accent);color:var(--bg);border:none;padding:4px 8px;border-radius:4px;font-size:11px;cursor:pointer;font-family:inherit'>✓</button></div>";
+    ch="<div style='padding:6px;position:sticky;top:0;background:var(--card);z-index:1'><input type='text' id='csearch' placeholder='输入国家名称或代码...' oninput='filterCOptions(this.value)' style='width:100%;padding:6px 8px;background:var(--bg);border:1px solid var(--border);border-radius:4px;color:var(--bright);font-size:12px;font-family:inherit;outline:none'></div>"+ch;ch+="<div style='padding:8px;display:flex;gap:6px;border-top:1px solid var(--border);position:sticky;bottom:0;background:var(--card)'><button class='rb' onclick='cancelC()' style='flex:1'>✕</button><button onclick='confirmC()' style='flex:1;background:var(--accent);color:var(--bg);border:none;padding:4px 8px;border-radius:4px;font-size:11px;cursor:pointer;font-family:inherit'>✓</button></div>";
     document.getElementById("copts").innerHTML=ch;
     var dh="";
     Object.keys(di).sort(function(a,b){return dn(a).localeCompare(dn(b))}).forEach(function(d){
         dh+="<div class='o"+(pD.has(d)?" sl":"")+"' data-dis='"+d+"' onclick='tSD(this.dataset.dis)'><span class='c'></span>"+dn(d)+"</div>";
     });
-    dh="<div style='padding:6px;position:sticky;top:0;background:var(--card);z-index:1'><input type='text' id='dsearch' placeholder='搜索疾病...' oninput='filterDOptions(this.value)' style='width:100%;padding:6px 8px;background:var(--bg);border:1px solid var(--border);border-radius:4px;color:var(--bright);font-size:12px;font-family:inherit;outline:none'></div>"+dh;dh+="<div style='padding:8px;display:flex;gap:6px;border-top:1px solid var(--border);position:sticky;bottom:0;background:var(--card)'><button class='rb' onclick='cancelD()' style='flex:1'>✕</button><button onclick='confirmD()' style='flex:1;background:var(--accent);color:var(--bg);border:none;padding:4px 8px;border-radius:4px;font-size:11px;cursor:pointer;font-family:inherit'>✓</button></div>";
+    dh="<div style='padding:6px;position:sticky;top:0;background:var(--card);z-index:1'><input type='text' id='dsearch' placeholder='输入疾病名称或别名...' oninput='filterDOptions(this.value)' style='width:100%;padding:6px 8px;background:var(--bg);border:1px solid var(--border);border-radius:4px;color:var(--bright);font-size:12px;font-family:inherit;outline:none'></div>"+dh;dh+="<div style='padding:8px;display:flex;gap:6px;border-top:1px solid var(--border);position:sticky;bottom:0;background:var(--card)'><button class='rb' onclick='cancelD()' style='flex:1'>✕</button><button onclick='confirmD()' style='flex:1;background:var(--accent);color:var(--bg);border:none;padding:4px 8px;border-radius:4px;font-size:11px;cursor:pointer;font-family:inherit'>✓</button></div>";
     document.getElementById("dopts").innerHTML=dh;
     uB();
 }
@@ -273,7 +273,7 @@ function openNews(){
         h+="</div>";
     });
     document.getElementById("na").innerHTML=h;
-    document.getElementById("nt").textContent="突发新闻";
+    document.getElementById("nt").textContent="突发新闻新闻";
     document.getElementById("nbg").classList.add("op");
 }
 
@@ -310,7 +310,7 @@ function dC(disease,days){
     else if(days<=30){buckets=new Array(30).fill(0);for(var d=29;d>=0;d--){var dt=new Date(now-d*86400000);labels.push(d%5===0?(dt.getMonth()+1)+"/"+dt.getDate():"")}items.forEach(function(x){var diff=Math.floor((now-new Date(x.date_reported))/86400000);if(diff>=0&&diff<30)buckets[29-diff]+=x.cases||0})}
     else{for(var m=5;m>=0;m--){var dt=new Date(now.getFullYear(),now.getMonth()-m,1);labels.push(dt.getFullYear()+"/"+(dt.getMonth()+1))}items.forEach(function(x){var dt=new Date(x.date_reported);var diff=Math.floor((now-dt)/86400000/30);if(diff>=0&&diff<6)buckets[5-diff]+=x.cases||0})}
     var ctx=document.getElementById("dc");if(!ctx)return;if(myChart)myChart.destroy();
-    myChart=new Chart(ctx,{type:"line",data:{labels:labels,datasets:[{label:"Cases",data:buckets,borderColor:"#00d4aa",backgroundColor:"rgba(0,212,170,0.08)",fill:true,tension:0.3,pointRadius:4,pointBackgroundColor:"#00d4aa",pointBorderColor:"#0f1419",pointBorderWidth:2,borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:"#8899a6"}}},scales:{x:{title:{display:true,text:days<=30?"Date":"Month",color:"#8899a6"},grid:{color:"rgba(45,59,80,0.5)"},ticks:{color:"#8899a6",maxRotation:0}},y:{title:{display:true,text:"Cases",color:"#8899a6"},grid:{color:"rgba(45,59,80,0.5)"},ticks:{color:"#8899a6"},beginAtZero:true}}}});
+    myChart=new Chart(ctx,{type:"line",data:{labels:labels,datasets:[{label:"病例",data:buckets,borderColor:"#00d4aa",backgroundColor:"rgba(0,212,170,0.08)",fill:true,tension:0.3,pointRadius:4,pointBackgroundColor:"#00d4aa",pointBorderColor:"#0f1419",pointBorderWidth:2,borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:"#8899a6"}}},scales:{x:{title:{display:true,text:days<=30?"日期":"月份",color:"#8899a6"},grid:{color:"rgba(45,59,80,0.5)"},ticks:{color:"#8899a6",maxRotation:0}},y:{title:{display:true,text:"病例",color:"#8899a6"},grid:{color:"rgba(45,59,80,0.5)"},ticks:{color:"#8899a6"},beginAtZero:true}}}});
 }
 
 window.addEventListener("load",init);
