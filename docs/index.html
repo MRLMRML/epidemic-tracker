@@ -211,14 +211,13 @@ function cloD(){document.getElementById("dbg").classList.remove("op")}
 function resetAll(){
     sC.clear();sD.clear();sV.clear();pC.clear();pD.clear();pV.clear();
     sCont.clear();sPath.clear();pCont.clear();pPath.clear();hiddenD.clear();
-    selectedDisease=null;
     updateDropUI();uB();closD();
     if(allData)render(allData);
     if(map)map.flyTo([20,0],2,{duration:0.5});
     // Reset chart if in chart view
     if(viewMode==='chart')renderTrendChart();
 }
-var viewMode='map',trendChart=null,selectedDisease=null;
+var viewMode='map',trendChart=null;
 
 function toggleView(){
     var mapView=document.getElementById('map');
@@ -278,8 +277,7 @@ function renderTrendChart(){
     var diseaseData={};
     o.forEach(function(x){
         var d=new Date(x.date_reported);
-        var disease=selectedDisease?selectedDisease:x.disease;
-        if(selectedDisease&&x.disease!==selectedDisease)return;
+        var disease=x.disease;
         if(!diseaseData[disease])diseaseData[disease]=new Array(12).fill(0);
         for(var i=0;i<12;i++){
             if(d.getFullYear()===months[i].y&&d.getMonth()===months[i].m){
@@ -309,7 +307,7 @@ function renderTrendChart(){
         };
     });
     // Update title
-    var title=selectedDisease?dn(selectedDisease)+' — 近一年趋势':'全球疫情趋势（近一年）';
+    var title=sD.size===1?dn(Array.from(sD)[0])+' — 近一年趋势':'全球疫情趋势（近一年）';
     document.getElementById('chartTitle').textContent=title;
     // Update legend
     var legendHtml='';
@@ -342,12 +340,17 @@ function renderTrendChart(){
 }
 
 function toggleDiseaseLegend(disease){
-    selectedDisease=selectedDisease?null:disease;
+    if(sD.has(disease)){
+        sD.clear();
+    }else{
+        sD.clear();
+        sD.add(disease);
+    }
+    updateDropUI();uB();
     renderTrendChart();
 }
 
 function filterDiseaseFromCard(d){
-    selectedDisease=d;
     sD.clear();sD.add(d);
     updateDropUI();uB();
     if(viewMode==='chart')renderTrendChart();
