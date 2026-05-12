@@ -10,57 +10,59 @@
 [![Auto Update](https://github.com/MRLMRML/global-epidemic-tracker/actions/workflows/update-data.yml/badge.svg)](https://github.com/MRLMRML/global-epidemic-tracker/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-Real-time global disease outbreak monitoring with news cross-validation. Data sourced from WHO Disease Outbreak News API, validated against independent news outlets, and presented through an interactive Chinese-language dashboard.
+实时全球疫情监控，支持新闻交叉验证。数据来源于 WHO 疾病暴发新闻 API，经独立新闻媒体验证，通过中文交互式仪表板呈现。
 
 ---
 
-## What It Does
+## 功能概览
 
 ```
-WHO DON API  →  Data Collector  →  News Cross-Validation  →  Dashboard
-(all diseases)    (53 diseases)     (Bing/Google/Reddit)       (中文)
+WHO DON API  →  数据采集器  →  新闻交叉验证  →  仪表板
+(所有疾病)     (53种疾病)    (Bing/Google/Reddit)   (中文)
 ```
 
-- **581 active outbreaks** across **151 countries**
-- **53 diseases** tracked including Cholera, Ebola, Dengue, Measles, Hantavirus, Mpox, and more
-- **2.97M cases** and **13,677 deaths** monitored globally
-- **News cross-validation**: every outbreak verified against Bing, Google News, and Reddit
-- **Data source & credibility labels**: each disease card shows data source and verification status
-- **Auto-updates every 6 hours** via GitHub Actions
+- **581 个活跃疫情** 覆盖 **151 个国家**
+- **53 种疾病** 包括霍乱、埃博拉、登革热、麻疹、汉坦病毒、猴痘等
+- **297 万病例** 和 **13,677 例死亡** 全球监控
+- **新闻交叉验证**：每个疫情经 Bing、Google News、Reddit 验证
+- **数据源和可信度标注**：每个疾病卡片显示数据来源和验证状态
+- **每 6 小时自动更新** 通过 GitHub Actions
 
-## Dashboard
+## 仪表板
 
-**[→ Open Dashboard](https://mrlmrml.github.io/global-epidemic-tracker/)**
+**[→ 打开仪表板](https://mrlmrml.github.io/global-epidemic-tracker/)**
 
-| Feature | Description |
-|---------|------------|
-| Interactive map | Dark theme, cluster markers, severity colors |
-| Hierarchical filters | Continent → Country, Pathogen Type → Disease |
-| Data source labels | WHO, OWID, news cross-validation badges per disease |
-| Credibility indicators | Verified / Partial / Pending status for each outbreak |
-| Disease tooltips | Hover to see disease description |
-| Risk alerts | H2H transmission warnings, severity ranking |
-| News ticker | Scrolling latest outbreak news |
-| Disease detail | Click for 7-day/30-day/6-month trend charts |
-| Language | 中文（简体） |
+| 功能 | 说明 |
+|------|------|
+| 交互式地图 | 暗色主题，聚类标记，严重性配色 |
+| 趋势图视图 | 点击 📊 切换，显示近一年历史数据折线图 |
+| 视图同步 | 地图和趋势图共享筛选条件，数据实时同步 |
+| 层级筛选 | 大洲 → 国家，病原体类型 → 疾病 |
+| 数据源标注 | 每个疾病显示 WHO、OWID、新闻验证标签 |
+| 可信度指标 | 已交叉验证 / 部分验证 / 待验证 |
+| 疾病提示 | 鼠标悬停查看疾病描述 |
+| 风险警报 | H2H 人传人警告，严重性排名 |
+| 新闻滚动 | 最新疫情新闻滚动显示 |
+| 疾病详情 | 点击查看 7天/30天/半年 趋势图 |
+| 语言 | 中文（简体） |
 
-## Quick Start
+## 快速开始
 
 ```bash
 git clone https://github.com/MRLMRML/global-epidemic-tracker.git
 cd global-epidemic-tracker
 pip install requests
 
-# Fetch latest data + news validation
+# 获取最新数据 + 新闻验证
 python3 scripts/fetch_data.py --fetch --validate --summary
 
-# Export for dashboard
+# 导出仪表板数据
 python3 scripts/fetch_data.py --fetch --export-json --export-geojson
 
-# Open dashboard locally
-open site/index.html          # macOS
-xdg-open site/index.html      # Linux
-start site/index.html          # Windows
+# 本地打开仪表板
+open docs/index.html          # macOS
+xdg-open docs/index.html      # Linux
+start docs/index.html          # Windows
 ```
 
 ## Python API
@@ -71,91 +73,90 @@ from src.collectors.aggregator import EpidemicAggregator
 agg = EpidemicAggregator()
 agg.fetch_all(validate=True)
 
-# Global summary
+# 全球摘要
 summary = agg.get_global_summary()
 # → 581 outbreaks, 2,970,802 cases, 13,677 deaths
 
-# Filter by disease, country, severity
+# 按疾病、国家、严重性筛选
 cholera = agg.get_outbreaks(disease="Cholera")
 japan = agg.get_outbreaks(country="JPN")
 critical = agg.get_outbreaks(severity="very_high")
 
-# Filter by continent and pathogen type
+# 按大洲和病原体类型筛选
 asia_outbreaks = agg.get_outbreaks(continent="Asia")
 virus_outbreaks = agg.get_outbreaks(pathogen_type="Virus")
 
-# Risk assessment
+# 风险评估
 risk = agg.get_risk_assessment("JPN")
 # → {"level": "low", "total_cases": 0, ...}
 ```
 
-## Agent Integration
+## Agent 集成
 
-The `SKILL.md` file makes this project usable as an AI agent skill. Compatible with:
+`SKILL.md` 文件使本项目可作为 AI Agent 技能使用。兼容：
 
 - **OpenCode** — `load_skills=["global-epidemic-tracker"]`
-- **Claude Code** — Reference `SKILL.md` in context
-- **OpenClaw** / **Hermes** — Include `SKILL.md` in agent context
+- **Claude Code** — 在上下文中引用 `SKILL.md`
+- **OpenClaw** / **Hermes** — 在 Agent 上下文中包含 `SKILL.md`
 
-Example agent queries:
-- "What cholera outbreaks are active right now?"
-- "What's the most dangerous outbreak in Asia?"
-- "What diseases have H2H transmission?"
+示例查询：
+- "现在有哪些霍乱疫情？"
+- "亚洲最危险的疫情是什么？"
+- "哪些疾病有人传人？"
 
-## Architecture
+## 架构
 
 ```
 global-epidemic-tracker/
-├── SKILL.md                          # Agent skill definition
-├── scripts/fetch_data.py             # CLI data pipeline
+├── SKILL.md                          # Agent 技能定义
+├── scripts/fetch_data.py             # CLI 数据管道
 ├── src/
 │   ├── collectors/
-│   │   ├── who_don.py                # WHO Disease Outbreak News API
-│   │   ├── who_gho.py                # WHO Global Health Observatory
-│   │   ├── owid.py                   # Our World in Data (Mpox)
-│   │   └── aggregator.py             # Multi-source aggregation
+│   │   ├── who_don.py                # WHO 疾病暴发新闻 API
+│   │   ├── who_gho.py                # WHO 全球卫生观测
+│   │   ├── owid.py                   # Our World in Data (猴痘)
+│   │   └── aggregator.py             # 多源聚合
 │   ├── validation/
-│   │   └── news_validator.py         # Bing/Google/Reddit cross-validation
+│   │   └── news_validator.py         # Bing/Google/Reddit 交叉验证
 │   └── models/
-│       └── __init__.py               # Data models (Outbreak, Country, etc.)
-├── site/
-│   ├── index.html                    # Dashboard (single-file, no server needed)
-│   └── data/                         # Live data (JSON/GeoJSON)
+│       └── __init__.py               # 数据模型
+├── docs/
+│   ├── index.html                    # 仪表板（单文件，无需服务器）
+│   └── data/                         # 实时数据 (JSON/GeoJSON)
 ├── data/
-│   └── processed/                    # Exported data
-├── .github/workflows/
-│   └── update-data.yml               # Auto-update every 6 hours
-└── SKILL.md                          # Agent skill
+│   └── processed/                    # 导出数据
+└── .github/workflows/
+    └── update-data.yml               # 每 6 小时自动更新
 ```
 
-## Data Sources
+## 数据源
 
-| Source | What | Method | Frequency |
-|--------|------|--------|-----------|
-| **WHO DON API** | Global outbreak alerts | REST API | Event-driven |
-| **WHO GHO** | Annual disease statistics | REST API | Annual |
-| **OWID** | Mpox daily data | CSV | Daily |
-| **Bing News** | Cross-validation | RSS | Per-run |
-| **Google News** | Cross-validation | RSS | Per-run |
-| **Reddit** | Community reports | API | Per-run |
+| 来源 | 内容 | 方法 | 频率 |
+|------|------|------|------|
+| **WHO DON API** | 全球疫情警报 | REST API | 事件驱动 |
+| **WHO GHO** | 年度疾病统计 | REST API | 年度 |
+| **OWID** | 猴痘每日数据 | CSV | 每日 |
+| **Bing News** | 交叉验证 | RSS | 每次运行 |
+| **Google News** | 交叉验证 | RSS | 每次运行 |
+| **Reddit** | 社区报告 | API | 每次运行 |
 
-## Diseases Tracked
+## 追踪的疾病
 
-Cholera · Ebola · Marburg · Mpox · Dengue · Measles · Influenza · Hantavirus · Yellow Fever · Meningitis · Polio · MERS · Nipah · Rift Valley Fever · West Nile · Oropouche · Lassa Fever · CCHF · Plague · Anthrax · Chikungunya · Diphtheria · Hepatitis E · Rabies · Zika · COVID-19 · and more (53 total)
+霍乱 · 埃博拉 · 马尔堡 · 猴痘 · 登革热 · 麻疹 · 流感 · 汉坦病毒 · 黄热病 · 脑膜炎 · 脊髓灰质炎 · MERS · 尼帕 · 裂谷热 · 西尼罗 · 奥罗普切 · 拉沙热 · 克里米亚出血热 · 鼠疫 · 炭疽 · 基孔肯雅 · 白喉 · 戊型肝炎 · 狂犬病 · 寨卡 · 新冠 等（共 53 种）
 
-## Contributing
+## 贡献
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Submit a pull request
+1. Fork 仓库
+2. 创建功能分支
+3. 提交更改
+4. 发起 Pull Request
 
-Areas to contribute:
-- New data source collectors
-- Disease name translations
-- Dashboard improvements
-- Data accuracy fixes
+贡献方向：
+- 新数据源采集器
+- 疾病名称翻译
+- 仪表板改进
+- 数据准确性修复
 
-## License
+## 许可证
 
-MIT — Use it, fork it, deploy it. The people's data belongs to the people.
+MIT — 自由使用、分发、部署。人民的数据属于人民。
