@@ -353,8 +353,8 @@ function toggleDiseaseLegend(disease){
 function filterDiseaseFromCard(d){
     sD.clear();sD.add(d);
     updateDropUI();uB();
-    if(viewMode==='chart')renderTrendChart();
-    else if(allData)render(allData);
+    // Always call render to update sidebar cards, it will sync chart if needed
+    if(allData)render(allData);
 }
 function togD(t){var dd=document.getElementById(t==="c"?"cdd":t==="d"?"ddd":"vdd");var o=dd.classList.contains("op");closD();if(!o)dd.classList.add("op")}
 function closD(){document.getElementById("cdd").classList.remove("op");document.getElementById("ddd").classList.remove("op");document.getElementById("vdd").classList.remove("op")}
