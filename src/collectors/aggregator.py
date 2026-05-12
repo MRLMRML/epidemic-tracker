@@ -12,6 +12,62 @@ from ..collectors.owid import OWIDMpoxCollector
 from ..validation.news_validator import NewsValidator
 
 
+
+CONTINENT_MAP = {
+    "AFG":"Asia","AGO":"Africa","ALB":"Europe","AMR":"Americas","ARE":"Asia","ARG":"Americas","ARM":"Asia","AUS":"Oceania","AUT":"Europe",
+    "BDI":"Africa","BEL":"Europe","BEN":"Africa","BFA":"Africa","BGD":"Asia","BGR":"Europe","BIH":"Europe","BOL":"Americas","BRA":"Americas","BRN":"Asia","BTN":"Asia","BWA":"Africa",
+    "CAF":"Africa","CAN":"Americas","CHE":"Europe","CHL":"Americas","CHN":"Asia","CIV":"Africa","CMR":"Africa","COD":"Africa","COG":"Africa","COL":"Americas","COM":"Africa","CRI":"Americas","CUB":"Americas","CZE":"Europe",
+    "DEU":"Europe","DJI":"Africa","DNK":"Europe","DOM":"Americas","DZA":"Africa",
+    "ECU":"Americas","EGY":"Africa","EMR":"Asia","ERI":"Africa","ESP":"Europe","EST":"Europe","ETH":"Africa","EUR":"Europe",
+    "FIN":"Europe","FJI":"Oceania","FRA":"Europe",
+    "GAB":"Africa","GBR":"Europe","GEO":"Asia","GHA":"Africa","GIN":"Africa","GLOBAL":"Global","GMB":"Africa","GNB":"Africa","GNQ":"Africa","GRC":"Europe","GTM":"Americas","GUY":"Americas",
+    "HND":"Americas","HRV":"Europe","HTI":"Americas","HUN":"Europe",
+    "IDN":"Asia","IND":"Asia","IRL":"Europe","IRN":"Asia","IRQ":"Asia","ISL":"Europe","ISR":"Asia","ITA":"Europe",
+    "JAM":"Americas","JOR":"Asia","JPN":"Asia",
+    "KAZ":"Asia","KEN":"Africa","KGZ":"Asia","KHM":"Asia","KOR":"Asia","KWT":"Asia",
+    "LAO":"Asia","LBN":"Asia","LBR":"Africa","LBY":"Africa","LKA":"Asia","LUX":"Europe","LVA":"Europe",
+    "MAR":"Africa","MDA":"Europe","MDG":"Africa","MDV":"Asia","MEX":"Americas","MLI":"Africa","MLT":"Europe","MMR":"Asia","MNG":"Asia","MOZ":"Africa","MRT":"Africa","MUL":"Global","MWI":"Africa","MYS":"Asia",
+    "NAM":"Africa","NCL":"Oceania","NER":"Africa","NGA":"Africa","NIC":"Americas","NLD":"Europe","NOR":"Europe","NPL":"Asia","NZL":"Oceania",
+    "OMN":"Asia","OWID_NAM":"Americas","OWID_OCE":"Oceania","OWID_SAM":"Americas",
+    "PAK":"Asia","PAN":"Americas","PER":"Americas","PHL":"Asia","PNG":"Oceania","POL":"Europe","PRK":"Asia","PRT":"Europe","PRY":"Americas","PSE":"Asia",
+    "QAT":"Asia",
+    "ROU":"Europe","RUS":"Europe","RWA":"Africa",
+    "SAU":"Asia","SDN":"Africa","SEAR":"Asia","SEN":"Africa","SGP":"Asia","SLE":"Africa","SLV":"Americas","SOM":"Africa","SRB":"Europe","SSD":"Africa","SVK":"Europe","SVN":"Europe","SWE":"Europe","SWZ":"Africa","SYR":"Asia",
+    "TCD":"Africa","TGO":"Africa","THA":"Asia","TJK":"Asia","TKM":"Asia","TLS":"Asia","TTO":"Americas","TUN":"Africa","TUR":"Asia","TWN":"Asia","TZA":"Africa",
+    "UGA":"Africa","UKR":"Europe","URY":"Americas","USA":"Americas","UZB":"Asia",
+    "VEN":"Americas","VNM":"Asia",
+    "WB_HI":"Global","WB_LI":"Global","WB_LMI":"Global","WB_UMI":"Global","WPR":"Asia",
+    "YEM":"Asia",
+    "ZAF":"Africa","ZMB":"Africa","ZWE":"Africa",
+}
+
+PATHOGEN_TYPES = {
+    "Cholera":"Bacteria","Ebola Virus Disease":"Virus","Marburg Virus Disease":"Virus",
+    "Mpox":"Virus","Dengue":"Virus","Measles":"Virus","Influenza":"Virus",
+    "Hantavirus":"Virus","Yellow Fever":"Virus","Diphtheria":"Bacteria",
+    "Lassa Fever":"Virus","Nipah Virus Infection":"Virus","Malaria":"Parasite",
+    "Avian Influenza":"Virus","COVID":"Virus","SARS":"Virus","Plague":"Bacteria",
+    "Anthrax":"Bacteria","Rabies":"Virus","Rift Valley Fever":"Virus",
+    "West Nile Virus":"Virus","Crimean-Congo Hemorrhagic Fever":"Virus",
+    "Hepatitis E":"Virus","Legionellosis":"Bacteria","Chikungunya":"Virus",
+    "Zika virus disease":"Virus","Typhoid fever":"Bacteria",
+    "Meningococcal Meningitis":"Bacteria","Poliomyelitis":"Virus",
+    "Japanese Encephalitis":"Virus","Rubella":"Virus","Mumps":"Virus",
+    "Neonatal Tetanus":"Bacteria","MERS":"Virus","Acute Unknown Illness":"Unknown",
+    "Novel coronavirus infection":"Virus","Oropouche Virus Disease":"Virus",
+    "Sudan Virus Disease":"Virus","HIV cases":"Virus","Botulism":"Bacteria",
+    "Enterovirus":"Virus","Enterovirus Infection":"Virus",
+    "Epidemic encephalitis":"Virus","Leptospirosis":"Bacteria",
+    "Listeriosis":"Bacteria","Psittacosis":"Bacteria","Shigellosis":"Bacteria",
+    "Bloody diarrhoea":"Unknown","Undiagnosed disease":"Unknown",
+    "Cases of Undiagnosed Febrile Illness":"Unknown",
+    "Western Equine Encephalitis":"Virus","Chapare haemorrhagic fever":"Virus",
+    "Iatrogenic Botulism":"Bacteria",
+    "Upsurge of respiratory illnesses among children":"Unknown",
+    "Middle East Respiratory Syndrome Coronavirus":"Virus",
+    "Middle East respiratory syndrome coronavirus":"Virus",
+}
+
 class EpidemicAggregator:
     def __init__(self, cache_dir: str = "data/cache"):
         self.who = WHODONCollector(cache_dir=cache_dir)
@@ -61,7 +117,8 @@ class EpidemicAggregator:
         self._outbreaks = unique
 
     def get_outbreaks(self, disease: Optional[str] = None, country: Optional[str] = None,
-                      severity: Optional[Severity] = None, verified_only: bool = False) -> list[OutbreakReport]:
+                      severity: Optional[Severity] = None, verified_only: bool = False,
+                      continent: Optional[str] = None, pathogen_type: Optional[str] = None) -> list[OutbreakReport]:
         filtered = self._outbreaks
         if disease:
             d = disease.lower()
@@ -73,6 +130,10 @@ class EpidemicAggregator:
             filtered = [o for o in filtered if o.severity == severity]
         if verified_only:
             filtered = [o for o in filtered if o.news_verified]
+        if continent:
+            filtered = [o for o in filtered if CONTINENT_MAP.get(o.country_iso3, "") == continent]
+        if pathogen_type:
+            filtered = [o for o in filtered if PATHOGEN_TYPES.get(o.disease, "") == pathogen_type]
         return filtered
 
     def get_global_summary(self) -> GlobalSummary:
