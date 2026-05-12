@@ -539,6 +539,8 @@ function render(d){
     var tc=0,td=0;o.forEach(function(x){tc+=x.cases||0;td+=x.deaths||0});
     document.getElementById("stats").innerHTML='<div class="si"><div class="sv">'+o.length+'</div><div class="sl">活跃疫情</div></div><div class="si"><div class="sv">'+fmt(tc||null)+'</div><div class="sl">病例</div></div><div class="si"><div class="sv">'+fmt(td||null)+'</div><div class="sl">死亡</div></div><div class="si"><div class="sv">'+pct(td,tc)+'</div><div class="sl">致死率</div></div><div class="si"><div class="sv">'+new Set(o.map(function(x){return x.country_iso3})).size+'</div><div class="sl">国家</div></div>';
     rM(o);rN(d.outbreaks);rS(o,d);
+    // Sync chart view if active
+    if(viewMode==='chart')renderTrendChart();
 }
 
 function rM(o){
